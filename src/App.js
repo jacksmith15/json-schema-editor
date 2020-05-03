@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 
 const KEYWORDS = {
   array: {
@@ -37,6 +37,7 @@ const KEYWORDS = {
   },
 };
 
+
 function keywordField(keyword, name, type) {
   return (
     <div className="keyword-field" key={keyword}>
@@ -45,6 +46,7 @@ function keywordField(keyword, name, type) {
     </div>
   );
 }
+
 
 function keywordGroup(prefix, typeName) {
   return (
@@ -60,6 +62,7 @@ function keywordGroup(prefix, typeName) {
   );
 }
 
+
 function keywordGroups(prefix, typeValue) {
   let typeSet = new Set(typeValue);
   if (typeSet.has("integer") && typeSet.has("number")) {
@@ -68,13 +71,58 @@ function keywordGroups(prefix, typeValue) {
   return typeValue.map((typeName) => keywordGroup(prefix, typeName));
 }
 
-function getDotPath(object, path) {
+
+function getDotPath(object, path, defaultValue) {
   if (!path) {
     return object;
   }
-  const get = (obj, key) => obj[key];
-  return path.split(".").reduce(get, object);
+  try {
+    const get = (obj, key) => obj[key];
+    const returnValue = path.split(".").reduce(get, object);
+    if (typeof returnValue === "undefined") {
+      return defaultValue;
+    }
+    return returnValue;
+  }
+  catch(err) {
+    return defaultValue;
+  }
 }
+
+
+function Properties({ form, remove, push, name }) {
+  let values = getDotPath(form.values, name, []);
+  const propsPath = name.replace(/_properties/g, "properties");
+  return (
+    <div>
+      {values.map((_value, index) => {
+        return (
+          <div key={index}>
+            <Field
+              name={`${name}.${index}`}
+              type="text"
+            ></Field>
+            <JSONSchemaFields
+              name={`${propsPath}.${_value}`}
+              setFieldValue={form.setFieldValue}
+              values={form.values}
+            />
+            <button type="button" onClick={() => remove(index)}>
+              Remove
+            </button>
+          </div>
+        );
+      })}
+      <button
+        type="button"
+        onClick={() => push("")}
+      >
+        Add Property
+      </button>
+    </div>
+  );
+};
+
 
 class JSONSchemaFields extends React.Component {
   constructor(props) {
@@ -129,6 +177,12 @@ class JSONSchemaFields extends React.Component {
             name={this.withPrefix("items")}
             setFieldValue={this.props.setFieldValue}
             values={this.props.values}
+          />
+        )}
+        {this.values().type.includes("object") && (
+          <FieldArray
+            name={this.withPrefix("_properties")}
+            component={Properties}
           />
         )}
       </React.Fragment>
