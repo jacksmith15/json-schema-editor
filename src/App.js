@@ -2,6 +2,25 @@ import React from "react";
 import "./App.css";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 
+
+function filterProps(filter, obj) {
+  if (Array.isArray(obj)) {
+    obj.forEach((val) => {filterProps(filter, val)});
+    return
+  }
+  if (!typeof obj === "object") {
+    return
+  }
+  for (const prop in obj) {
+    if (!filter(prop, obj[prop])) {
+      delete obj[prop];
+    } else if (typeof obj[prop] === "object") {
+      filterProps(obj[prop]);
+    }
+  }
+}
+
+
 const KEYWORDS = {
   array: {
     minItems: { name: "Minimum Items", type: "number" },
@@ -93,32 +112,55 @@ function getDotPath(object, path, defaultValue) {
 function Properties({ form, remove, push, name }) {
   let values = getDotPath(form.values, name, []);
   const propsPath = name.replace(/_properties/g, "properties");
+  console.log(form);
+  const removeProp = (index, propName) => {
+    remove(index);
+    let propsValue = Object.assign({}, getDotPath(form.values, propsPath, {}));
+    delete propsValue[propName];
+    form.setFieldValue(propsPath, propsValue);
+  }
   return (
     <div>
-      {values.map((_value, index) => {
+      {values.map((propName, index) => {
         return (
           <div key={index}>
             <Field
               name={`${name}.${index}`}
               type="text"
+              readOnly
             ></Field>
             <JSONSchemaFields
-              name={`${propsPath}.${_value}`}
+              name={`${propsPath}.${propName}`}
               setFieldValue={form.setFieldValue}
               values={form.values}
             />
-            <button type="button" onClick={() => remove(index)}>
+            <button type="button" onClick={() => removeProp(index, propName)}>
               Remove
             </button>
           </div>
         );
       })}
-      <button
-        type="button"
-        onClick={() => push("")}
+      <Formik
+        initialValues={{ propName: "" }}
+        valdate={(values) => {}}
+        onSubmit={(values, formik) => {
+          push(values.propName)
+        }}
       >
-        Add Property
-      </button>
+        {
+          (subformik) => (
+            <form>
+              <Field
+                name="propName"
+                type="text"
+              />
+              <button type="button" onClick={() => subformik.submitForm()}>
+              Add Property
+              </button>
+            </form>
+          )
+        }
+      </Formik>
     </div>
   );
 };
@@ -191,6 +233,13 @@ class JSONSchemaFields extends React.Component {
 }
 
 class ReactForm extends React.Component {
+
+  renderResults(values) {
+    values = Object.assign({}, values);
+    filterProps((key, val) => key !== "_properties", values);
+    return JSON.stringify(values, null, 2);
+  }
+
   render() {
     return (
       <React.Fragment>
@@ -198,8 +247,7 @@ class ReactForm extends React.Component {
           initialValues={{ }}
           valdate={(values) => {}}
           onSubmit={(values, formik) => {
-            let allValues = Object.assign({}, values);
-            alert(JSON.stringify(allValues, null, 2));
+            alert(this.renderResults(values));
             formik.setSubmitting(false);
           }}
         >
