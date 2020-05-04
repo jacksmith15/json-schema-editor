@@ -1,6 +1,51 @@
 import React from "react";
 import "./App.css";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
+import styled from 'styled-components';
+import {Form as BootstrapForm, Button, Navbar} from "react-bootstrap";
+
+const CONTAINER = styled.div`
+  background: #F7F9FA;
+  height: auto;
+  width: 90%;
+  margin: 5em auto;
+  color: snow;
+  -webkit-box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.4);
+
+  @media(min-width: 786px) {
+    width: 60%;
+  }
+
+  label {
+    color: #24B9B6;
+    font-size: 1.2em;
+    font-weight: 400;
+  }
+
+  h1 {
+    color: #24B9B6;
+    padding-top: .5em;
+  }
+
+  .form-group {
+    margin-bottom: 1.25em;
+  }
+`;
+
+
+const FORM = styled(Form)`
+  width: 90%;
+  text-align: left;
+  padding-top: 2em;
+  padding-bottom: 2em;
+  padding-left: 2em;
+
+  @media(min-width: 786px) {
+    width: 50%;
+  }
+`;
 
 
 function filterProps(filter, obj) {
@@ -59,10 +104,10 @@ const KEYWORDS = {
 
 function keywordField(keyword, name, type) {
   return (
-    <div className="keyword-field" key={keyword}>
-      {name}
+    <BootstrapForm.Group name={keyword} key={keyword}>
+      <BootstrapForm.Label>{name}</BootstrapForm.Label><br />
       <Field type={type} name={keyword} />
-    </div>
+    </BootstrapForm.Group>
   );
 }
 
@@ -120,23 +165,21 @@ function Properties({ form, remove, push, name }) {
     form.setFieldValue(propsPath, propsValue);
   }
   return (
-    <div>
+    <BootstrapForm.Group name="properties">
+      <BootstrapForm.Label>Properties</BootstrapForm.Label>
       {values.map((propName, index) => {
         return (
           <div key={index}>
-            <Field
-              name={`${name}.${index}`}
-              type="text"
-              readOnly
-            ></Field>
             <JSONSchemaFields
               name={`${propsPath}.${propName}`}
               setFieldValue={form.setFieldValue}
               values={form.values}
             />
-            <button type="button" onClick={() => removeProp(index, propName)}>
-              Remove
-            </button>
+            <BootstrapForm.Group name="remove">
+              <Button type="button" onClick={() => removeProp(index, propName)} variant="danger">
+                Remove
+              </Button>
+            </BootstrapForm.Group>
           </div>
         );
       })}
@@ -149,19 +192,23 @@ function Properties({ form, remove, push, name }) {
       >
         {
           (subformik) => (
-            <form>
-              <Field
-                name="propName"
-                type="text"
-              />
-              <button type="button" onClick={() => subformik.submitForm()}>
+            <BootstrapForm>
+              <BootstrapForm.Group name="propName">
+                <Field
+                  className="form-control"
+                  name="propName"
+                  type="text"
+                  placeholder="Add a new property"
+                />
+              </BootstrapForm.Group>
+              <Button type="button" onClick={() => subformik.submitForm()} variant="dark">
               Add Property
-              </button>
-            </form>
+              </Button>
+            </BootstrapForm>
           )
         }
       </Formik>
-    </div>
+    </BootstrapForm.Group>
   );
 };
 
@@ -190,29 +237,32 @@ class JSONSchemaFields extends React.Component {
   render() {
     return (
       <React.Fragment>
-        {(this.props && this.props.name) || ""}
-        Type
-        <Field
-          as="select"
-          name={this.withPrefix("type")}
-          multiple={true}
-          onChange={(event) => {
-            this.props.setFieldValue(
-              this.withPrefix("type"),
-              [].slice
-                .call(event.target.selectedOptions)
-                .map((option) => option.value)
-            );
-          }}
-        >
-          <option value="array">Array</option>
-          <option value="boolean">Boolean</option>
-          <option value="integer">Integer</option>
-          <option value="null">Null</option>
-          <option value="number">Number</option>
-          <option value="object">Object</option>
-          <option value="string">String</option>
-        </Field>
+        {(this.props && this.props.name && <BootstrapForm.Label>{this.props.name}</BootstrapForm.Label>) || ""}
+        <BootstrapForm.Group name={this.withPrefix("type")}>
+          <BootstrapForm.Label>Type</BootstrapForm.Label><br />
+          <Field
+            as="select"
+            className="form-control"
+            name={this.withPrefix("type")}
+            multiple={true}
+            onChange={(event) => {
+              this.props.setFieldValue(
+                this.withPrefix("type"),
+                [].slice
+                  .call(event.target.selectedOptions)
+                  .map((option) => option.value)
+              );
+            }}
+          >
+            <option value="array">Array</option>
+            <option value="boolean">Boolean</option>
+            <option value="integer">Integer</option>
+            <option value="null">Null</option>
+            <option value="number">Number</option>
+            <option value="object">Object</option>
+            <option value="string">String</option>
+          </Field>
+        </BootstrapForm.Group>
         {keywordGroups(this.withPrefix, this.values().type)}
         {this.values().type.includes("array") && (
           <JSONSchemaFields
@@ -232,7 +282,7 @@ class JSONSchemaFields extends React.Component {
   }
 }
 
-class ReactForm extends React.Component {
+class JSONSchemaForm extends React.Component {
 
   renderResults(values) {
     values = Object.assign({}, values);
@@ -242,7 +292,7 @@ class ReactForm extends React.Component {
 
   render() {
     return (
-      <React.Fragment>
+      <CONTAINER className="json-schema-form">
         <Formik
           initialValues={{ }}
           valdate={(values) => {}}
@@ -252,7 +302,7 @@ class ReactForm extends React.Component {
           }}
         >
           {({ values, isSubmitting, setFieldValue }) => (
-            <Form>
+            <FORM>
               <JSONSchemaFields
                 values={values}
                 name=""
@@ -260,15 +310,14 @@ class ReactForm extends React.Component {
                 setFieldValue={setFieldValue}
               />
               <React.Fragment>
-                <ErrorMessage name="type" component="div" />
-                <button type="submit" disabled={this.props.isSubmitting}>
+                <Button type="submit" disabled={this.props.isSubmitting} variant="dark">
                   Submit
-                </button>
+                </Button>
               </React.Fragment>
-            </Form>
+            </FORM>
           )}
         </Formik>
-      </React.Fragment>
+      </CONTAINER>
     );
   }
 }
@@ -277,8 +326,10 @@ class App extends React.Component {
   render() {
     return (
       <div className="app">
-        <header className="title">JSON Schema Editor</header>
-        <ReactForm />
+        <Navbar bg="dark" variant="dark">
+          <Navbar.Brand>JSON Schema Editor</Navbar.Brand>
+        </Navbar>
+        <JSONSchemaForm />
       </div>
     );
   }
