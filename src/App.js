@@ -96,8 +96,8 @@ const KEYWORDS = {
   string: {
     format: { name: "Format", type: "string" },
     pattern: { name: "Pattern", type: "string" },
-    minLength: { name: "Minimum Length", type: "string" },
-    maxLength: { name: "Maximum Length", type: "string" },
+    minLength: { name: "Minimum Length", type: "number" },
+    maxLength: { name: "Maximum Length", type: "number" },
   },
 };
 
@@ -106,7 +106,11 @@ function keywordField(keyword, name, type) {
   return (
     <BootstrapForm.Group name={keyword} key={keyword}>
       <BootstrapForm.Label>{name}</BootstrapForm.Label><br />
-      <Field type={type} name={keyword} />
+      <Field
+        type={type}
+        name={keyword}
+        className="form-control"
+      />
     </BootstrapForm.Group>
   );
 }
@@ -219,11 +223,25 @@ class JSONSchemaFields extends React.Component {
     this.withPrefix = this.withPrefix.bind(this);
   }
 
+  get depth() {
+    if (!this.props.name) {
+      return 0;
+    }
+    return this.props.name.split(".").length;
+  }
+
   withPrefix(key) {
     if (!this.props.name) {
       return key;
     }
     return this.props.name + "." + key;
+  }
+
+  get nameDisplay() {
+    if (!this.props.name) {
+      return ""
+    }
+    return this.props.name.split(".").map((seg) => seg[0].toUpperCase() + seg.slice(1)).join(" > ");
   }
 
   values() {
@@ -237,7 +255,10 @@ class JSONSchemaFields extends React.Component {
   render() {
     return (
       <React.Fragment>
-        {(this.props && this.props.name && <BootstrapForm.Label>{this.props.name}</BootstrapForm.Label>) || ""}
+        <BootstrapForm.Label>
+          <b>{this.nameDisplay}</b>
+        </BootstrapForm.Label>
+        <IndentDiv depth={this.depth}>
         <BootstrapForm.Group name={this.withPrefix("type")}>
           <BootstrapForm.Label>Type</BootstrapForm.Label><br />
           <Field
@@ -277,10 +298,16 @@ class JSONSchemaFields extends React.Component {
             component={Properties}
           />
         )}
+        </IndentDiv>
       </React.Fragment>
     );
   }
 }
+
+
+const IndentDiv = styled.div.attrs(props => ({depth: props.depth || 0}))`
+  padding-left: ${props => props.depth * 30}px;
+`
 
 class JSONSchemaForm extends React.Component {
 
