@@ -196,16 +196,14 @@ function Properties({ form, remove, push, name }) {
       >
         {
           (subformik) => (
-            <BootstrapForm>
-              <BootstrapForm.Group name="propName">
-                <Field
-                  className="form-control"
-                  name="propName"
-                  type="text"
-                  placeholder="Add a new property"
-                />
-              </BootstrapForm.Group>
-              <Button type="button" onClick={() => subformik.submitForm()} variant="dark">
+            <BootstrapForm className="form-inline">
+              <Field
+                className="form-control"
+                name="propName"
+                type="text"
+                placeholder="Add a new property"
+              />
+              <Button type="button" onClick={() => subformik.submitForm()} variant="dark" className="mx-2">
               Add Property
               </Button>
             </BootstrapForm>
@@ -215,6 +213,44 @@ function Properties({ form, remove, push, name }) {
     </BootstrapForm.Group>
   );
 };
+
+
+const HideScrollBarSelect = styled(Field)`
+  overflow-y: auto;
+`
+
+class TypeSelector extends React.Component {
+  render() {
+    return (
+      <BootstrapForm.Group name={this.props.name}>
+        <BootstrapForm.Label>Type</BootstrapForm.Label><br />
+        <HideScrollBarSelect
+          as="select"
+          className="form-control"
+          name={this.props.name}
+          multiple={true}
+          size="7"
+          onChange={(event) => {
+            this.props.setFieldValue(
+              this.props.name,
+              [].slice
+                .call(event.target.selectedOptions)
+                .map((option) => option.value)
+            );
+          }}
+        >
+          <option value="array">Array</option>
+          <option value="boolean">Boolean</option>
+          <option value="integer">Integer</option>
+          <option value="null">Null</option>
+          <option value="number">Number</option>
+          <option value="object">Object</option>
+          <option value="string">String</option>
+        </HideScrollBarSelect>
+      </BootstrapForm.Group>
+    )
+  }
+}
 
 
 class JSONSchemaFields extends React.Component {
@@ -259,45 +295,21 @@ class JSONSchemaFields extends React.Component {
           <b>{this.nameDisplay}</b>
         </BootstrapForm.Label>
         <IndentDiv depth={this.depth}>
-        <BootstrapForm.Group name={this.withPrefix("type")}>
-          <BootstrapForm.Label>Type</BootstrapForm.Label><br />
-          <Field
-            as="select"
-            className="form-control"
-            name={this.withPrefix("type")}
-            multiple={true}
-            onChange={(event) => {
-              this.props.setFieldValue(
-                this.withPrefix("type"),
-                [].slice
-                  .call(event.target.selectedOptions)
-                  .map((option) => option.value)
-              );
-            }}
-          >
-            <option value="array">Array</option>
-            <option value="boolean">Boolean</option>
-            <option value="integer">Integer</option>
-            <option value="null">Null</option>
-            <option value="number">Number</option>
-            <option value="object">Object</option>
-            <option value="string">String</option>
-          </Field>
-        </BootstrapForm.Group>
-        {keywordGroups(this.withPrefix, this.values().type)}
-        {this.values().type.includes("array") && (
-          <JSONSchemaFields
-            name={this.withPrefix("items")}
-            setFieldValue={this.props.setFieldValue}
-            values={this.props.values}
-          />
-        )}
-        {this.values().type.includes("object") && (
-          <FieldArray
-            name={this.withPrefix("_properties")}
-            component={Properties}
-          />
-        )}
+          <TypeSelector name={this.withPrefix("type")} setFieldValue={this.props.setFieldValue} />
+          {keywordGroups(this.withPrefix, this.values().type)}
+          {this.values().type.includes("array") && (
+            <JSONSchemaFields
+              name={this.withPrefix("items")}
+              setFieldValue={this.props.setFieldValue}
+              values={this.props.values}
+            />
+          )}
+          {this.values().type.includes("object") && (
+            <FieldArray
+              name={this.withPrefix("_properties")}
+              component={Properties}
+            />
+          )}
         </IndentDiv>
       </React.Fragment>
     );
