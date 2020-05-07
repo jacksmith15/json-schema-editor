@@ -1,12 +1,18 @@
 import React from "react";
 import "./App.css";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
-import styled from 'styled-components';
-import {Form as BootstrapForm, Button, Navbar} from "react-bootstrap";
-
+import styled from "styled-components";
+import {
+  Form as BootstrapForm,
+  Button,
+  Modal,
+  Navbar,
+  Tabs,
+  Tab,
+} from "react-bootstrap";
 
 const CONTAINER = styled.div`
-  background: #F7F9FA;
+  background: #f7f9fa;
   height: auto;
   width: 90%;
   margin: 5em auto;
@@ -15,26 +21,25 @@ const CONTAINER = styled.div`
   -moz-box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.4);
   box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.4);
 
-  @media(min-width: 786px) {
+  @media (min-width: 786px) {
     width: 60%;
   }
 
   label {
-    color: #24B9B6;
+    color: #24b9b6;
     font-size: 1.2em;
     font-weight: 400;
   }
 
   h1 {
-    color: #24B9B6;
-    padding-top: .5em;
+    color: #24b9b6;
+    padding-top: 0.5em;
   }
 
   .form-group {
     margin-bottom: 1.25em;
   }
 `;
-
 
 const FORM = styled(Form)`
   width: 90%;
@@ -43,19 +48,20 @@ const FORM = styled(Form)`
   padding-bottom: 2em;
   padding-left: 2em;
 
-  @media(min-width: 786px) {
+  @media (min-width: 786px) {
     width: 50%;
   }
 `;
 
-
 function filterProps(filter, obj) {
   if (Array.isArray(obj)) {
-    obj.forEach((val) => {filterProps(filter, val)});
-    return
+    obj.forEach((val) => {
+      filterProps(filter, val);
+    });
+    return;
   }
   if (!typeof obj === "object") {
-    return
+    return;
   }
   for (const prop in obj) {
     if (!filter(prop, obj[prop])) {
@@ -64,6 +70,21 @@ function filterProps(filter, obj) {
       filterProps(obj[prop]);
     }
   }
+}
+
+function merge(left, right) {
+  return Object.assign({}, left, right);
+}
+
+
+function pathJoin(...args) {
+  const valid_args = args.filter(Boolean);
+  return valid_args.join(".");
+}
+
+
+function pathDepth(path) {
+  return path.split(".").filter(Boolean).length
 }
 
 
@@ -102,20 +123,15 @@ const KEYWORDS = {
   },
 };
 
-
 function keywordField(keyword, name, type) {
   return (
     <BootstrapForm.Group name={keyword} key={keyword}>
-      <BootstrapForm.Label>{name}</BootstrapForm.Label><br />
-      <Field
-        type={type}
-        name={keyword}
-        className="form-control"
-      />
+      <BootstrapForm.Label>{name}</BootstrapForm.Label>
+      <br />
+      <Field type={type} name={keyword} className="form-control" />
     </BootstrapForm.Group>
   );
 }
-
 
 function keywordGroup(prefix, typeName) {
   return (
@@ -131,7 +147,6 @@ function keywordGroup(prefix, typeName) {
   );
 }
 
-
 function keywordGroups(prefix, typeValue) {
   let typeSet = new Set(typeValue);
   if (typeSet.has("integer") && typeSet.has("number")) {
@@ -139,7 +154,6 @@ function keywordGroups(prefix, typeValue) {
   }
   return typeValue.map((typeName) => keywordGroup(prefix, typeName));
 }
-
 
 function getDotPath(object, path, defaultValue) {
   if (!path) {
@@ -152,23 +166,20 @@ function getDotPath(object, path, defaultValue) {
       return defaultValue;
     }
     return returnValue;
-  }
-  catch(err) {
+  } catch (err) {
     return defaultValue;
   }
 }
 
-
 function Properties({ form, remove, push, name }) {
   let values = getDotPath(form.values, name, []);
   const propsPath = name.replace(/_properties/g, "properties");
-  console.log(form);
   const removeProp = (index, propName) => {
     remove(index);
     let propsValue = Object.assign({}, getDotPath(form.values, propsPath, {}));
     delete propsValue[propName];
     form.setFieldValue(propsPath, propsValue);
-  }
+  };
   return (
     <BootstrapForm.Group name="properties">
       <BootstrapForm.Label>Properties</BootstrapForm.Label>
@@ -181,7 +192,11 @@ function Properties({ form, remove, push, name }) {
               values={form.values}
             />
             <BootstrapForm.Group name="remove">
-              <Button type="button" onClick={() => removeProp(index, propName)} variant="danger">
+              <Button
+                type="button"
+                onClick={() => removeProp(index, propName)}
+                variant="danger"
+              >
                 Remove
               </Button>
             </BootstrapForm.Group>
@@ -192,67 +207,172 @@ function Properties({ form, remove, push, name }) {
         initialValues={{ propName: "" }}
         valdate={(values) => {}}
         onSubmit={(values, formik) => {
-          push(values.propName)
+          push(values.propName);
         }}
       >
-        {
-          (subformik) => (
-            <BootstrapForm className="form-inline">
-              <Field
-                className="form-control"
-                name="propName"
-                type="text"
-                placeholder="Add a new property"
-              />
-              <Button type="button" onClick={() => subformik.submitForm()} variant="dark" className="mx-2">
+        {(subformik) => (
+          <BootstrapForm className="form-inline">
+            <Field
+              className="form-control"
+              name="propName"
+              type="text"
+              placeholder="Add a new property"
+            />
+            <Button
+              type="button"
+              onClick={() => subformik.submitForm()}
+              variant="dark"
+              className="mx-2"
+            >
               Add Property
-              </Button>
-            </BootstrapForm>
-          )
-        }
+            </Button>
+          </BootstrapForm>
+        )}
       </Formik>
     </BootstrapForm.Group>
   );
-};
-
-
-const HideScrollBarSelect = styled(Field)`
-  overflow-y: auto;
-`
-
-class TypeSelector extends React.Component {
-  render() {
-    return (
-      <BootstrapForm.Group name={this.props.name}>
-        <BootstrapForm.Label>Type</BootstrapForm.Label><br />
-        <HideScrollBarSelect
-          as="select"
-          className="form-control"
-          name={this.props.name}
-          multiple={true}
-          size="7"
-          onChange={(event) => {
-            this.props.setFieldValue(
-              this.props.name,
-              [].slice
-                .call(event.target.selectedOptions)
-                .map((option) => option.value)
-            );
-          }}
-        >
-          <option value="array">Array</option>
-          <option value="boolean">Boolean</option>
-          <option value="integer">Integer</option>
-          <option value="null">Null</option>
-          <option value="number">Number</option>
-          <option value="object">Object</option>
-          <option value="string">String</option>
-        </HideScrollBarSelect>
-      </BootstrapForm.Group>
-    )
-  }
 }
 
+
+function TypeSelector(props) {
+  const [show, setShow] = React.useState(false);
+  const [tab, setTab] = React.useState("existing");
+  const [choices, setChoices] = React.useState({
+    existing: null,
+    type: [],
+    compose: null,
+  });
+  const handleClose = () => {
+    if (tab === "compose") {
+      props.setFieldValue(pathJoin(props.name, "type"), []);
+      props.setFieldValue(pathJoin(props.name, choices[tab]), (choices[tab] === "not") ? {} : []);
+    } else if (tab === "existing") {
+      props.setFieldValue(pathJoin(props.name, "type"), []);
+      props.setFieldValue(pathJoin(props.name, "$ref"), `#/definitions/${choices[tab]}`);
+    } else {
+      props.setFieldValue(pathJoin(props.name, "type"), choices[tab]);
+    }
+    setShow(false);
+  };
+  const handleShow = () => setShow(true);
+
+  return (
+    <BootstrapForm.Group>
+      <Button variant="dark" onClick={handleShow}>
+        {pathDepth(props.name) ? "Define" : "Start..."}
+      </Button>
+
+      <Modal
+        show={show}
+        onHide={handleClose}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="contained-modal-title-vcenter">
+            Create schema
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Tabs activeKey={tab} onSelect={(key) => setTab(key)}>
+            <Tab eventKey="existing" title="Choose existing">
+              <BootstrapForm.Group className="my-2">
+                <BootstrapForm.Control
+                  as="select"
+                  onChange={(event) =>
+                    setChoices(merge(choices, { existing: event.target.value }))
+                  }
+                >
+                  {/* These options should be pulled from a store. */}
+                  <option value="" selected={true} disabled>Select one..</option>
+                  <option value="uuid">UUID</option>
+                  <option value="even-number">Even Number</option>
+                </BootstrapForm.Control>
+              </BootstrapForm.Group>
+            </Tab>
+            <Tab eventKey="type" title="Create new">
+              <BootstrapForm.Group className="my-2">
+                <BootstrapForm.Control
+                  as="select"
+                  multiple
+                  onChange={(event) =>
+                    setChoices(
+                      merge(choices, {
+                        type: [].slice
+                          .call(event.target.selectedOptions)
+                          .map((opt) => opt.value),
+                      })
+                    )
+                  }
+                >
+                  <option
+                    value="array"
+                    selected={choices.type.includes("array")}
+                  >
+                    Array
+                  </option>
+                  <option
+                    value="boolean"
+                    selected={choices.type.includes("boolean")}
+                  >
+                    Boolean
+                  </option>
+                  <option
+                    value="integer"
+                    selected={choices.type.includes("integer")}
+                  >
+                    Integer
+                  </option>
+                  <option value="null" selected={choices.type.includes("null")}>
+                    Null
+                  </option>
+                  <option
+                    value="number"
+                    selected={choices.type.includes("number")}
+                  >
+                    Number
+                  </option>
+                  <option
+                    value="object"
+                    selected={choices.type.includes("object")}
+                  >
+                    Object
+                  </option>
+                  <option
+                    value="string"
+                    selected={choices.type.includes("string")}
+                  >
+                    String
+                  </option>
+                </BootstrapForm.Control>
+              </BootstrapForm.Group>
+            </Tab>
+            <Tab eventKey="compose" title="Compose">
+              <BootstrapForm.Group className="my-2">
+                <BootstrapForm.Control
+                  as="select"
+                  onChange={(event) =>
+                    setChoices(merge(choices, { compose: event.target.value }))
+                  }
+                >
+                  <option value="" selected={true} disabled>Select one..</option>
+                  <option value="anyOf">Match Any</option>
+                  <option value="allOf">Match All</option>
+                  <option value="oneOf">Match One</option>
+                  <option value="not">Not</option>
+                </BootstrapForm.Control>
+              </BootstrapForm.Group>
+            </Tab>
+          </Tabs>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={handleClose}>Accept</Button>
+        </Modal.Footer>
+      </Modal>
+    </BootstrapForm.Group>
+  );
+}
 
 class JSONSchemaFields extends React.Component {
   constructor(props) {
@@ -268,17 +388,21 @@ class JSONSchemaFields extends React.Component {
   }
 
   withPrefix(key) {
-    if (!this.props.name) {
-      return key;
-    }
-    return this.props.name + "." + key;
+    return pathJoin(this.props.name, key);
+    // if (!this.props.name) {
+    //   return key;
+    // }
+    // return this.props.name + "." + key;
   }
 
   get nameDisplay() {
     if (!this.props.name) {
-      return ""
+      return "";
     }
-    return this.props.name.split(".").map((seg) => seg[0].toUpperCase() + seg.slice(1)).join(" > ");
+    return this.props.name
+      .split(".")
+      .map((seg) => seg[0].toUpperCase() + seg.slice(1))
+      .join(" > ");
   }
 
   values() {
@@ -286,7 +410,7 @@ class JSONSchemaFields extends React.Component {
     if (!value.type) {
       value.type = [];
     }
-    return value
+    return value;
   }
 
   render() {
@@ -296,7 +420,10 @@ class JSONSchemaFields extends React.Component {
           <b>{this.nameDisplay}</b>
         </BootstrapForm.Label>
         <IndentDiv depth={this.depth}>
-          <TypeSelector name={this.withPrefix("type")} setFieldValue={this.props.setFieldValue} />
+          <TypeSelector
+            name={this.props.name}
+            setFieldValue={this.props.setFieldValue}
+          />
           {keywordGroups(this.withPrefix, this.values().type)}
           {this.values().type.includes("array") && (
             <JSONSchemaFields
@@ -317,13 +444,11 @@ class JSONSchemaFields extends React.Component {
   }
 }
 
-
-const IndentDiv = styled.div.attrs(props => ({depth: props.depth || 0}))`
-  padding-left: ${props => props.depth * 30}px;
-`
+const IndentDiv = styled.div.attrs((props) => ({ depth: props.depth || 0 }))`
+  padding-left: ${(props) => props.depth * 30}px;
+`;
 
 class JSONSchemaForm extends React.Component {
-
   renderResults(values) {
     values = Object.assign({}, values);
     filterProps((key, val) => key !== "_properties", values);
@@ -334,7 +459,7 @@ class JSONSchemaForm extends React.Component {
     return (
       <CONTAINER className="json-schema-form">
         <Formik
-          initialValues={{ }}
+          initialValues={{}}
           valdate={(values) => {}}
           onSubmit={(values, formik) => {
             alert(this.renderResults(values));
@@ -350,7 +475,11 @@ class JSONSchemaForm extends React.Component {
                 setFieldValue={setFieldValue}
               />
               <React.Fragment>
-                <Button type="submit" disabled={this.props.isSubmitting} variant="dark">
+                <Button
+                  type="submit"
+                  disabled={this.props.isSubmitting}
+                  variant="dark"
+                >
                   Submit
                 </Button>
               </React.Fragment>
