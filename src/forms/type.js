@@ -13,42 +13,60 @@ import {
 } from "react-bootstrap";
 
 import { filterProps, merge, Path } from "helpers";
+import {SchemaForm} from "Builder";
 
 const KEYWORDS = {
     array: {
-        minItems: { name: "Minimum items", type: "number" },
-        maxItems: { name: "Maximum items", type: "number" },
-        uniqueItems: { name: "Unique items", type: "checkbox" },
+        minItems: { name: "Minimum items", type: "number", default: 0 },
+        maxItems: { name: "Maximum items", type: "number", default: 10 },
+        uniqueItems: { name: "Unique items", type: "checkbox", default: true },
     },
     boolean: {},
     integer: {
-        minimum: { name: "Minimum value", type: "number" },
-        maximum: { name: "Maximum value", type: "number" },
-        exclusiveMaximum: { name: "Exclusive maximum", type: "number" },
-        exclusiveMinimum: { name: "Exclusive minimum", type: "number" },
-        multipleOf: { name: "Multiple of", type: "number" },
+        minimum: { name: "Minimum value", type: "number", default: 0 },
+        maximum: { name: "Maximum value", type: "number", default: 100 },
+        exclusiveMaximum: {
+            name: "Exclusive maximum",
+            type: "number",
+            default: 100,
+        },
+        exclusiveMinimum: {
+            name: "Exclusive minimum",
+            type: "number",
+            default: 0,
+        },
+        multipleOf: { name: "Multiple of", type: "number", default: 2 },
     },
     number: {
-        minimum: { name: "Minimum value", type: "number" },
-        maximum: { name: "Maximum value", type: "number" },
-        exclusiveMaximum: { name: "Exclusive maximum", type: "number" },
-        exclusiveMinimum: { name: "Exclusive minimum", type: "number" },
-        multipleOf: { name: "Multiple of", type: "number" },
+        minimum: { name: "Minimum value", type: "number", default: 0.0 },
+        maximum: { name: "Maximum value", type: "number", default: 10.0 },
+        exclusiveMaximum: {
+            name: "Exclusive maximum",
+            type: "number",
+            default: 10.0,
+        },
+        exclusiveMinimum: {
+            name: "Exclusive minimum",
+            type: "number",
+            default: 0.0,
+        },
+        multipleOf: { name: "Multiple of", type: "number", default: 2.0 },
     },
     null: {},
     object: {
         additionalProperties: {
             name: "Additional properties",
             type: "checkbox",
+            default: false,
         },
-        minProperties: { name: "Minimum properties", type: "number" },
-        maxProperties: { name: "Maximum properties", type: "number" },
+        minProperties: { name: "Minimum properties", type: "number", default: 0 },
+        maxProperties: { name: "Maximum properties", type: "number", default: 10 },
     },
     string: {
-        format: { name: "Format", type: "text" },
-        pattern: { name: "Pattern", type: "text" },
-        minLength: { name: "Minimum length", type: "number" },
-        maxLength: { name: "Maximum length", type: "number" },
+        format: { name: "Format", type: "text", default: "" },
+        pattern: { name: "Pattern", type: "text", default: "" },
+        minLength: { name: "Minimum length", type: "number", default: 3 },
+        maxLength: { name: "Maximum length", type: "number", default: 200 },
     },
 };
 
@@ -113,7 +131,7 @@ function ValidationSelector(props) {
 
 function ValidationInputs(props) {
     const subSchema = new Path(props.path).get(props.schema);
-    const keywordSpecs = merge({}, ...Object.values(KEYWORDS))
+    const keywordSpecs = merge({}, ...Object.values(KEYWORDS));
     const presentKeywords = filterProps(
         (key) => Object.keys(subSchema).includes(key),
         keywordSpecs
