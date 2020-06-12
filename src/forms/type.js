@@ -12,43 +12,43 @@ import {
     Tab,
 } from "react-bootstrap";
 
-import { merge, Path } from "helpers";
+import { filterProps, merge, Path } from "helpers";
 
 const KEYWORDS = {
     array: {
-        minItems: { name: "Minimum Items", type: "number" },
-        maxItems: { name: "Maximum Items", type: "number" },
-        uniqueItems: { name: "Unique Items", type: "checkbox" },
+        minItems: { name: "Minimum items", type: "number" },
+        maxItems: { name: "Maximum items", type: "number" },
+        uniqueItems: { name: "Unique items", type: "checkbox" },
     },
     boolean: {},
     integer: {
-        minimum: { name: "Minimum Value", type: "number" },
-        maximum: { name: "Maximum Value", type: "number" },
-        exclusiveMaximum: { name: "Exclusive Maximum", type: "number" },
-        exclusiveMinimum: { name: "Exclusive Minimum", type: "number" },
-        multipleOf: { name: "Multiple Of", type: "number" },
+        minimum: { name: "Minimum value", type: "number" },
+        maximum: { name: "Maximum value", type: "number" },
+        exclusiveMaximum: { name: "Exclusive maximum", type: "number" },
+        exclusiveMinimum: { name: "Exclusive minimum", type: "number" },
+        multipleOf: { name: "Multiple of", type: "number" },
     },
     number: {
-        minimum: { name: "Minimum Value", type: "number" },
-        maximum: { name: "Maximum Value", type: "number" },
-        exclusiveMaximum: { name: "Exclusive Maximum", type: "number" },
-        exclusiveMinimum: { name: "Exclusive Minimum", type: "number" },
-        multipleOf: { name: "Multiple Of", type: "number" },
+        minimum: { name: "Minimum value", type: "number" },
+        maximum: { name: "Maximum value", type: "number" },
+        exclusiveMaximum: { name: "Exclusive maximum", type: "number" },
+        exclusiveMinimum: { name: "Exclusive minimum", type: "number" },
+        multipleOf: { name: "Multiple of", type: "number" },
     },
     null: {},
     object: {
         additionalProperties: {
-            name: "Additional Properties",
+            name: "Additional properties",
             type: "checkbox",
         },
-        minProperties: { name: "Minimum Properties", type: "number" },
-        maxProperties: { name: "Maximum Properties", type: "number" },
+        minProperties: { name: "Minimum properties", type: "number" },
+        maxProperties: { name: "Maximum properties", type: "number" },
     },
     string: {
-        format: { name: "Format", type: "string" },
-        pattern: { name: "Pattern", type: "string" },
-        minLength: { name: "Minimum Length", type: "number" },
-        maxLength: { name: "Maximum Length", type: "number" },
+        format: { name: "Format", type: "text" },
+        pattern: { name: "Pattern", type: "text" },
+        minLength: { name: "Minimum length", type: "number" },
+        maxLength: { name: "Maximum length", type: "number" },
     },
 };
 
@@ -65,24 +65,11 @@ function TypeForm(props) {
                     </React.Fragment>
                 ))}
             </h6>
-            <Form.Group>
-                <DropdownButton
-                    id={props.path + ".add-validation"}
-                    title="Add validation rule..."
-                >
-                    <Dropdown.Item
-                        as="button"
-                        onClick={() => {
-                            props.setSchemaValue(
-                                Path.join(props.path, "pattern"),
-                                subSchema["pattern"] || ""
-                            );
-                        }}
-                    >
-                        Regular expression
-                    </Dropdown.Item>
-                </DropdownButton>
-            </Form.Group>
+            <ValidationSelector
+                path={props.path}
+                schema={props.schema}
+                setSchemaValue={props.setSchemaValue}
+            />
             <ValidationInputs
                 setSchemaValue={props.setSchemaValue}
                 schema={props.schema}
@@ -92,38 +79,54 @@ function TypeForm(props) {
     );
 }
 
+function ValidationSelector(props) {
+    const subSchema = new Path(props.path).get(props.schema);
+    const keywordConfig = merge(
+        {},
+        ...Object.values(
+            filterProps((key) => subSchema.type.includes(key), KEYWORDS)
+        )
+    );
+    return (
+        <Form.Group>
+            <DropdownButton
+                id={props.path + ".add-validation"}
+                title="Add validation rule..."
+            >
+                {Object.entries(keywordConfig).map((entry) => (
+                    <Dropdown.Item
+                        as="button"
+                        onClick={() => {
+                            props.setSchemaValue(
+                                Path.join(props.path, entry[0]),
+                                subSchema[entry[0]] || entry[1].default
+                            );
+                        }}
+                    >
+                        {entry[1].name}
+                    </Dropdown.Item>
+                ))}
+            </DropdownButton>
+        </Form.Group>
+    );
+}
+
 function ValidationInputs(props) {
     const subSchema = new Path(props.path).get(props.schema);
+    const keywordSpecs = merge({}, ...Object.values(KEYWORDS))
+    const presentKeywords = filterProps(
+        (key) => Object.keys(subSchema).includes(key),
+        keywordSpecs
+    );
     let inputs = [];
-    if (Object.keys(subSchema).includes("pattern")) {
+    for (const keyword of Object.keys(presentKeywords)) {
         inputs.push(
-            <Form.Group
-                name="pattern"
-                key="pattern"
-                onChange={(event) =>
-                    props.setSchemaValue(
-                        Path.join(props.path, "pattern"),
-                        event.target.value
-                    )
-                }
-            >
-                <Form.Label>Pattern</Form.Label>
-                <Form.Control
-                    type="text"
-                    defaultValue={subSchema.pattern}
-                ></Form.Control>
-                <Button
-                    variant="danger"
-                    onClick={() =>
-                        props.setSchemaValue(
-                            Path.join(props.path, "pattern"),
-                            null
-                        )
-                    }
-                >
-                    Remove
-                </Button>
-            </Form.Group>
+            <ValidationInput
+                path={props.path}
+                schema={props.schema}
+                setSchemaValue={props.setSchemaValue}
+                keyword={keyword}
+            />
         );
     }
     return <React.Fragment>{inputs}</React.Fragment>;
@@ -151,7 +154,10 @@ function ValidationInput(props) {
             <Button
                 variant="danger"
                 onClick={() =>
-                    props.setSchemaValue(Path.join(props.path, props.keyword), null)
+                    props.setSchemaValue(
+                        Path.join(props.path, props.keyword),
+                        null
+                    )
                 }
             >
                 Remove

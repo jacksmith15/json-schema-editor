@@ -43,27 +43,20 @@ class xSet extends Set {
     }
 }
 
+
 /**
- * Recursive filter of object properties. Operates in place.
+ * Return an object with properties filtered.
  */
 function filterProps(filter, obj) {
-    if (Array.isArray(obj)) {
-        obj.forEach((val) => {
-            filterProps(filter, val);
-        });
-        return;
-    }
-    if (!typeof obj === "object") {
-        return;
-    }
+    let newObject = {};
     for (const prop in obj) {
-        if (!filter(prop, obj[prop])) {
-            delete obj[prop];
-        } else if (typeof obj[prop] === "object") {
-            filterProps(obj[prop]);
+        if (filter(prop)) {
+            newObject[prop] = obj[prop];
         }
     }
+    return newObject;
 }
+
 
 /**
  * Return a new object, which merges the supplied ones.
