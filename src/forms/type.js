@@ -13,7 +13,7 @@ import {
 } from "react-bootstrap";
 
 import { filterProps, merge, Path } from "helpers";
-import {SchemaForm} from "Builder";
+import { SchemaForm } from "Builder";
 
 const KEYWORDS = {
     array: {
@@ -59,8 +59,16 @@ const KEYWORDS = {
             type: "checkbox",
             default: false,
         },
-        minProperties: { name: "Minimum properties", type: "number", default: 0 },
-        maxProperties: { name: "Maximum properties", type: "number", default: 10 },
+        minProperties: {
+            name: "Minimum properties",
+            type: "number",
+            default: 0,
+        },
+        maxProperties: {
+            name: "Maximum properties",
+            type: "number",
+            default: 10,
+        },
     },
     string: {
         format: { name: "Format", type: "text", default: "" },
@@ -83,7 +91,15 @@ function TypeForm(props) {
                     </React.Fragment>
                 ))}
             </h6>
-            {types.includes("object") ? <PropertyEditor/> : ""}
+            {types.includes("object") ? (
+                <PropertyEditor
+                    path={props.path}
+                    schema={props.schema}
+                    setSchemaValue={props.setSchemaValue}
+                />
+            ) : (
+                ""
+            )}
             <ValidationSelector
                 path={props.path}
                 schema={props.schema}
@@ -91,6 +107,7 @@ function TypeForm(props) {
             />
             <ValidationInputs
                 setSchemaValue={props.setSchemaValue}
+                delSchemaValue={props.delSchemaValue}
                 schema={props.schema}
                 path={props.path}
             />
@@ -108,6 +125,7 @@ function ValidationSelector(props) {
     );
     return (
         <Form.Group>
+            <h4>Validation rules</h4>
             <DropdownButton
                 id={props.path + ".add-validation"}
                 title="Add validation rule..."
@@ -159,19 +177,21 @@ function ValidationInput(props) {
             name={props.keyword}
             key={props.keyword}
             onChange={(event) => {
-                const value = (event.target.type === "checkbox" ? event.target.checked : event.target.value);
+                const value =
+                    event.target.type === "checkbox"
+                        ? event.target.checked
+                        : event.target.value;
                 props.setSchemaValue(
                     Path.join(props.path, props.keyword),
                     value
-                )
-            }
-            }
+                );
+            }}
         >
             <Form.Label>{keywordSpec.name}</Form.Label>
             <Form.Control
                 type={keywordSpec.type}
                 defaultValue={subSchema[props.keyword]}
-                defaultChecked={(keywordSpec.default === true)}
+                defaultChecked={keywordSpec.default === true}
             ></Form.Control>
             <Button
                 variant="danger"
@@ -189,8 +209,47 @@ function ValidationInput(props) {
 }
 
 function PropertyEditor(props) {
-    return <div> Property Editor Here </div>;
+    const [propertyName, setPropertyName] = React.useState("");
+    const subSchema = new Path(props.path).get(props.schema);
+    const propertySchemas = subSchema.properties;
+    let propertyFields = [];
+    for (const property in propertySchemas) {
+        propertyFields.push(
+            <Form.Group>
+                <Form.Label>{property}</Form.Label>
+                <SchemaForm
+                    setSchemaValue={props.setSchemaValue}
+                    delSchemaValue={props.delSchemaValue}
+                    schema={props.schema}
+                    path={Path.join(props.path, "properties", property)}
+                />
+            </Form.Group>
+        );
+    }
+    return (
+        <React.Fragment>
+            <h4>Properties</h4>
+            {propertyFields}
+            <Form.Group
+                onChange={(event) => setPropertyName(event.target.value)}
+                className="form-inline"
+            >
+                <Form.Control
+                    type="text"
+                    placeholder="Enter property name here..."
+                />
+                <Button
+                    onClick={() =>
+                        props.setSchemaValue(
+                            Path.join(props.path, "properties", propertyName), {"foo": "bar"}
+                        )
+                    }
+                >
+                    Add property
+                </Button>
+            </Form.Group>
+        </React.Fragment>
+    );
 }
-
 
 export { TypeForm };
