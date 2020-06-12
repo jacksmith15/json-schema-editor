@@ -83,6 +83,7 @@ function TypeForm(props) {
                     </React.Fragment>
                 ))}
             </h6>
+            {types.includes("object") ? <PropertyEditor/> : ""}
             <ValidationSelector
                 path={props.path}
                 schema={props.schema}
@@ -157,17 +158,20 @@ function ValidationInput(props) {
         <Form.Group
             name={props.keyword}
             key={props.keyword}
-            onChange={(event) =>
+            onChange={(event) => {
+                const value = (event.target.type === "checkbox" ? event.target.checked : event.target.value);
                 props.setSchemaValue(
                     Path.join(props.path, props.keyword),
-                    event.target.value
+                    value
                 )
+            }
             }
         >
             <Form.Label>{keywordSpec.name}</Form.Label>
             <Form.Control
                 type={keywordSpec.type}
                 defaultValue={subSchema[props.keyword]}
+                defaultChecked={(keywordSpec.default === true)}
             ></Form.Control>
             <Button
                 variant="danger"
@@ -183,5 +187,10 @@ function ValidationInput(props) {
         </Form.Group>
     );
 }
+
+function PropertyEditor(props) {
+    return <div> Property Editor Here </div>;
+}
+
 
 export { TypeForm };
