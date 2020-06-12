@@ -80,7 +80,7 @@ const KEYWORDS = {
 
 function TypeForm(props) {
     const subSchema = new Path(props.path).get(props.schema);
-    const types = Path.join(props.path, "type").get(subSchema);
+    const types = subSchema.type;
     return (
         <React.Fragment>
             <h6>
@@ -91,15 +91,6 @@ function TypeForm(props) {
                     </React.Fragment>
                 ))}
             </h6>
-            {types.includes("object") ? (
-                <PropertyEditor
-                    path={props.path}
-                    schema={props.schema}
-                    setSchemaValue={props.setSchemaValue}
-                />
-            ) : (
-                ""
-            )}
             <ValidationSelector
                 path={props.path}
                 schema={props.schema}
@@ -111,6 +102,15 @@ function TypeForm(props) {
                 schema={props.schema}
                 path={props.path}
             />
+            {types.includes("object") ? (
+                <PropertyEditor
+                    path={props.path}
+                    schema={props.schema}
+                    setSchemaValue={props.setSchemaValue}
+                />
+            ) : (
+                ""
+            )}
         </React.Fragment>
     );
 }
@@ -213,6 +213,8 @@ function PropertyEditor(props) {
     const subSchema = new Path(props.path).get(props.schema);
     const propertySchemas = subSchema.properties;
     let propertyFields = [];
+    console.log(props.path);
+    console.log(Path.join(props.path, "properties"));
     for (const property in propertySchemas) {
         propertyFields.push(
             <Form.Group>
