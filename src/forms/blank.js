@@ -59,7 +59,6 @@ function LaunchSchemaModal(props) {
     return (
         <Modal
             show={props.show}
-            // onHide={props.handleClose}
             size="lg"
             aria-labelledby="contained-modal-title-vcenter"
             centered
@@ -74,78 +73,18 @@ function LaunchSchemaModal(props) {
                     activeKey={props.tab}
                     onSelect={(key) => props.setTab(key)}
                 >
-                    {/*<ReferenceTab choices={props.choices} setChoices={props.setChoices}/> */ }
-                    <Tab eventKey="reference" title="Choose reference">
-                        <Form.Group className="my-2">
-                            <Form.Control
-                                as="select"
-                                onChange={(event) =>
-                                    props.setChoices(
-                                        merge(props.choices, {
-                                            reference: event.target.value,
-                                        })
-                                    )
-                                }
-                            >
-                                {/* These options should be pulled from a store. */}
-                                <option value="" selected={true} disabled>
-                                    Select one..
-                                </option>
-                                <option value="uuid">UUID</option>
-                                <option value="even-number">Even Number</option>
-                            </Form.Control>
-                        </Form.Group>
-                    </Tab>
-                    <Tab eventKey="type" title="Create new">
-                        <Form.Group className="my-2">
-                            <Form.Control
-                                as="select"
-                                multiple
-                                onChange={(event) =>
-                                    props.setChoices(
-                                        merge(props.choices, {
-                                            type: [].slice
-                                                .call(
-                                                    event.target.selectedOptions
-                                                )
-                                                .map((opt) => opt.value),
-                                        })
-                                    )
-                                }
-                                value={props.choices.type}
-                            >
-                                <option value="array">Array</option>
-                                <option value="boolean">Boolean</option>
-                                <option value="integer">Integer</option>
-                                <option value="null">Null</option>
-                                <option value="number">Number</option>
-                                <option value="object">Object</option>
-                                <option value="string">String</option>
-                            </Form.Control>
-                        </Form.Group>
-                    </Tab>
-                    <Tab eventKey="composition" title="Compose">
-                        <Form.Group className="my-2">
-                            <Form.Control
-                                as="select"
-                                onChange={(event) =>
-                                    props.setChoices(
-                                        merge(props.choices, {
-                                            composition: event.target.value,
-                                        })
-                                    )
-                                }
-                            >
-                                <option value="" selected={true} disabled>
-                                    Select one..
-                                </option>
-                                <option value="anyOf">Match Any</option>
-                                <option value="allOf">Match All</option>
-                                <option value="oneOf">Match One</option>
-                                <option value="not">Not</option>
-                            </Form.Control>
-                        </Form.Group>
-                    </Tab>
+                    {ReferenceTab({
+                        choices: props.choices,
+                        setChoices: props.setChoices,
+                    })}
+                    {TypeTab({
+                        choices: props.choices,
+                        setChoices: props.setChoices,
+                    })}
+                    {CompositionTab({
+                        choices: props.choices,
+                        setChoices: props.setChoices,
+                    })}
                 </Tabs>
             </Modal.Body>
             <Modal.Footer>
@@ -168,9 +107,10 @@ function ReferenceTab(props) {
                             })
                         )
                     }
+                    defaultValue=""
                 >
                     {/* These options should be pulled from a store. */}
-                    <option value="" selected={true} disabled>
+                    <option value="" disabled>
                         Select one..
                     </option>
                     <option value="uuid">UUID</option>
@@ -225,8 +165,9 @@ function CompositionTab(props) {
                             })
                         )
                     }
+                    defaultValue=""
                 >
-                    <option value="" selected={true} disabled>
+                    <option value="" disabled>
                         Select one..
                     </option>
                     <option value="anyOf">Match Any</option>
