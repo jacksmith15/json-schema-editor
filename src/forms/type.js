@@ -220,8 +220,6 @@ function PropertyEditor(props) {
     const subSchema = new Path(props.path).get(props.schema);
     const propertySchemas = subSchema.properties;
     let propertyFields = [];
-    console.log(props.path);
-    console.log(Path.join(props.path, "properties"));
     for (const property in propertySchemas) {
         propertyFields.push(
             <Card>
