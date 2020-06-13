@@ -58,10 +58,10 @@ function Builder(props) {
     const [schema, setSchema] = React.useState({});
 
     const setSchemaValue = (path, value) =>
-        setSchema(clean(new Path(path).set(schema, value)));
+        setSchema(new Path(path).set(schema, value));
 
-    const delSchemaValue = (path, value) =>
-        setSchema(clean(new Path(path).set(path, null)));
+    const delSchemaValue = (path) =>
+        setSchema(new Path(path).remove(schema));
 
     return (
         <SchemaForm

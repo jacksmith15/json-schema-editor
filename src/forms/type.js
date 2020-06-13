@@ -162,6 +162,7 @@ function ValidationInputs(props) {
                 path={props.path}
                 schema={props.schema}
                 setSchemaValue={props.setSchemaValue}
+                delSchemaValue={props.delSchemaValue}
                 keyword={keyword}
             />
         );
@@ -196,9 +197,8 @@ function ValidationInput(props) {
             <Button
                 variant="danger"
                 onClick={() =>
-                    props.setSchemaValue(
+                    props.delSchemaValue(
                         Path.join(props.path, props.keyword),
-                        null
                     )
                 }
             >
@@ -249,7 +249,7 @@ function PropertyEditor(props) {
                                     "properties",
                                     propertyName
                                 ),
-                                { foo: "bar" }
+                                {}
                             );
                         }
                     }}

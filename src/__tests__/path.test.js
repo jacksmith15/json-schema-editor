@@ -148,16 +148,46 @@ describe("Path", () => {
                 "newquxmux",
                 { foo: "bar", baz: ["a", "b"], qux: { mux: "newquxmux" } },
             ],
-            ["baz.0", "c", {"foo": "bar", "baz": ["c", "b"]}]
+            ["baz.0", "c", { foo: "bar", baz: ["c", "b"] }],
         ])("sets path %s to %s", (path, value, expected) => {
             const newObject = new Path(path).set(object, value);
             expect(newObject).toEqual(expected);
         });
 
-        it.each([
-            ["foo.bar"], ["baz.0.foo"]
-        ])("throws on bad set", (path) => {
+        it.each([["foo.bar"], ["baz.0.foo"]])("throws on bad set", (path) => {
             expect(() => new Path(path).set(object, "value")).toThrow();
+        });
+    });
+
+    describe(".remove", () => {
+        const object = { foo: { bar: "a" }, baz: ["b", "c"] };
+
+        it("removes the entire object", () => {
+            expect(new Path("").remove(object)).toBe(undefined);
+        });
+
+        it("removes top level object properties", () => {
+            expect(new Path("foo").remove(object)).toEqual({ baz: ["b", "c"] });
+        });
+
+        it("removes top level array properties", () => {
+            expect(new Path("baz").remove(object)).toEqual({
+                foo: { bar: "a" },
+            });
+        });
+
+        it("removes nested object properties", () => {
+            expect(new Path("foo.bar").remove(object)).toEqual({
+                foo: {},
+                baz: ["b", "c"],
+            });
+        });
+
+        it("removes nested array items", () => {
+            expect(new Path("baz.1").remove(object)).toEqual({
+                foo: { bar: "a" },
+                baz: ["b", undefined],
+            });
         });
     });
 });

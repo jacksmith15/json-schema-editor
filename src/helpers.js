@@ -1,4 +1,4 @@
-import { isEqual } from "lodash";
+import { cloneDeep, isEqual } from "lodash";
 
 /**
  * Remove object keys with null of empty values.
@@ -100,7 +100,7 @@ class Path extends String {
     }
 
     set(object, value) {
-        let newObject = merge(object);
+        let newObject = cloneDeep(object);
         let target = newObject;
         if (!this.length) {
             return value;
@@ -112,6 +112,22 @@ class Path extends String {
             target = target[segment];
         }
         target[this.segments.slice(-1)[0]] = value;
+        return newObject;
+    }
+
+    remove(object) {
+        let newObject = cloneDeep(object);
+        let target = newObject;
+        if (!this.length) {
+            return undefined;
+        }
+        for (let segment of this.segments.slice(0, -1)) {
+            if (!(segment in target)) {
+                return newObject;
+            }
+            target = target[segment];
+        }
+        delete target[this.segments.slice(-1)[0]]
         return newObject;
     }
 }

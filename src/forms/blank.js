@@ -23,7 +23,7 @@ function BlankForm(props) {
         if (tab === "composition" && choices.composition !== null) {
             props.setSchemaValue(
                 Path.join(props.path, choices[tab]),
-                choices[tab] === "not" ? {} : [] // TODO: This gets cleaned immediately.
+                choices[tab] === "not" ? {} : []
             );
         } else if (tab === "reference" && choices.reference !== null) {
             props.setSchemaValue(
