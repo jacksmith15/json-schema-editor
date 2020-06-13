@@ -39,7 +39,7 @@ function BlankForm(props) {
 
     return (
         <Form.Group>
-            <Button variant="dark" onClick={handleShow}>
+            <Button onClick={handleShow} block>
                 Create schema
             </Button>
 

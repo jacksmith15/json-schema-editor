@@ -1,6 +1,8 @@
 import React from "react";
 import {
+    Accordion,
     Badge,
+    Card,
     Container,
     Dropdown,
     DropdownButton,
@@ -123,30 +125,35 @@ function ValidationSelector(props) {
             filterProps((key) => subSchema.type.includes(key), KEYWORDS)
         )
     );
-    return (
-        <Form.Group>
-            <h4>Validation rules</h4>
-            <DropdownButton
-                id={props.path + ".add-validation"}
-                title="Add validation rule..."
-            >
-                {Object.entries(keywordConfig).map((entry) => (
-                    <Dropdown.Item
-                        as="button"
-                        onClick={() => {
-                            props.setSchemaValue(
-                                Path.join(props.path, entry[0]),
-                                subSchema[entry[0]] || entry[1].default
-                            );
-                        }}
-                    >
-                        {entry[1].name}
-                    </Dropdown.Item>
-                ))}
-            </DropdownButton>
-        </Form.Group>
-    );
+    if (Object.keys(keywordConfig).length) {
+        return (
+            <Form.Group>
+                <h4>Validation rules</h4>
+                <DropdownButton
+                    id={props.path + ".add-validation"}
+                    title="Add validation rule..."
+                    drop="right"
+                >
+                    {Object.entries(keywordConfig).map((entry) => (
+                        <Dropdown.Item
+                            as="button"
+                            onClick={() => {
+                                props.setSchemaValue(
+                                    Path.join(props.path, entry[0]),
+                                    subSchema[entry[0]] || entry[1].default
+                                );
+                            }}
+                        >
+                            {entry[1].name}
+                        </Dropdown.Item>
+                    ))}
+                </DropdownButton>
+            </Form.Group>
+        );
+    }
+    return null;
 }
+
 
 function ValidationInputs(props) {
     const subSchema = new Path(props.path).get(props.schema);
@@ -217,21 +224,31 @@ function PropertyEditor(props) {
     console.log(Path.join(props.path, "properties"));
     for (const property in propertySchemas) {
         propertyFields.push(
-            <Form.Group>
-                <Form.Label>{property}</Form.Label>
-                <SchemaForm
-                    setSchemaValue={props.setSchemaValue}
-                    delSchemaValue={props.delSchemaValue}
-                    schema={props.schema}
-                    path={Path.join(props.path, "properties", property)}
-                />
-            </Form.Group>
+            <Card>
+                <Card.Header>
+                    <Accordion.Toggle as={Button} variant="link" eventKey={property}>
+                        {property}
+                    </Accordion.Toggle>
+                </Card.Header>
+                <Accordion.Collapse eventKey={property}>
+                    <Card.Body>
+                        <SchemaForm
+                            setSchemaValue={props.setSchemaValue}
+                            delSchemaValue={props.delSchemaValue}
+                            schema={props.schema}
+                            path={Path.join(props.path, "properties", property)}
+                        />
+                    </Card.Body>
+                </Accordion.Collapse>
+            </Card>
         );
     }
     return (
         <React.Fragment>
             <h4>Properties</h4>
-            {propertyFields}
+            <Accordion>
+                {propertyFields}
+            </Accordion>
             <Form.Group
                 onChange={(event) => setPropertyName(event.target.value)}
                 className="form-inline"
@@ -239,6 +256,7 @@ function PropertyEditor(props) {
                 <Form.Control
                     type="text"
                     placeholder="Enter property name here..."
+                    value={propertyName}
                 />
                 <Button
                     onClick={() => {
@@ -251,7 +269,8 @@ function PropertyEditor(props) {
                                 ),
                                 {}
                             );
-                        }
+                        };
+                        setPropertyName("");
                     }}
                 >
                     Add property

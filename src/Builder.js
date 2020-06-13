@@ -15,7 +15,10 @@ import { BlankForm } from "forms/blank";
 import { ReferenceForm } from "forms/reference";
 import { CompositionForm } from "forms/composition";
 
-console.log(typeof CompositionForm);
+// TODO: Spacing
+// TODO: Accordion click on whole card
+// TODO: Remove properties
+// TODO: Don't close accordion on change
 
 const METATYPE = {
     reference: ReferenceForm,
@@ -27,7 +30,6 @@ const METATYPE = {
 const COMPOSITION_KEYWORDS = new xSet(["allOf", "anyOf", "oneOf", "not"]);
 
 function getSchemaFormComponent(schema) {
-    console.log(typeof schema);
     if ("$ref" in schema) {
         return METATYPE.reference;
     } else if (new xSet(schema.keys).intersection(COMPOSITION_KEYWORDS).size) {
