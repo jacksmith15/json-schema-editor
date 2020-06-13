@@ -241,11 +241,18 @@ function PropertyEditor(props) {
                     placeholder="Enter property name here..."
                 />
                 <Button
-                    onClick={() =>
-                        props.setSchemaValue(
-                            Path.join(props.path, "properties", propertyName), {"foo": "bar"}
-                        )
-                    }
+                    onClick={() => {
+                        if (propertyName.length) {
+                            props.setSchemaValue(
+                                Path.join(
+                                    props.path,
+                                    "properties",
+                                    propertyName
+                                ),
+                                { foo: "bar" }
+                            );
+                        }
+                    }}
                 >
                     Add property
                 </Button>
