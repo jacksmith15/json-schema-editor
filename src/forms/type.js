@@ -223,11 +223,9 @@ function PropertyEditor(props) {
     for (const property in propertySchemas) {
         propertyFields.push(
             <Card>
-                <Card.Header>
-                    <Accordion.Toggle as={Button} variant="link" eventKey={property}>
-                        {property}
-                    </Accordion.Toggle>
-                </Card.Header>
+                <Accordion.Toggle as={Card.Header} variant="link" eventKey={property}>
+                    <i>{property}</i>
+                </Accordion.Toggle>
                 <Accordion.Collapse eventKey={property}>
                     <Card.Body>
                         <SchemaForm

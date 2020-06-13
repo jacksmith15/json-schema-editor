@@ -16,7 +16,6 @@ import { ReferenceForm } from "forms/reference";
 import { CompositionForm } from "forms/composition";
 
 // TODO: Spacing
-// TODO: Accordion click on whole card
 // TODO: Remove properties
 // TODO: Don't close accordion on change
 
