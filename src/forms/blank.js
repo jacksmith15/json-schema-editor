@@ -97,6 +97,7 @@ function LaunchSchemaModal(props) {
 function ReferenceTab(props) {
     return (
         <Tab eventKey="reference" title="Choose reference">
+            <div class="mt-3"/>
             <Form.Group className="my-2">
                 <Form.Control
                     as="select"
@@ -124,6 +125,7 @@ function ReferenceTab(props) {
 function TypeTab(props) {
     return (
         <Tab eventKey="type" title="Create new">
+            <div class="mt-3"/>
             <Form.Group className="my-2">
                 <Form.Control
                     as="select"
@@ -155,6 +157,7 @@ function TypeTab(props) {
 function CompositionTab(props) {
     return (
         <Tab eventKey="composition" title="Compose">
+            <div class="mt-3"/>
             <Form.Group className="my-2">
                 <Form.Control
                     as="select"
