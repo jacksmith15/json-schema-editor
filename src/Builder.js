@@ -19,7 +19,6 @@ import { ReferenceForm } from "forms/reference";
 import { CompositionForm } from "forms/composition";
 
 // TODO: Spacing
-// TODO: Don't close accordion on change
 // TODO: Name the schema
 // TODO: Save and reference schemas
 // TODO: Pass minimal state

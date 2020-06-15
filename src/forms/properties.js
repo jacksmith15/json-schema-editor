@@ -17,6 +17,7 @@ import { SchemaForm } from "Builder";
 
 function PropertyEditor(props) {
     const [propertyName, setPropertyName] = React.useState("");
+    const [selectedProperty, setSelectedProperty] = React.useState(null);
 
     const subSchema = new Path(props.path).get(props.schema);
 
@@ -31,13 +32,18 @@ function PropertyEditor(props) {
                 delSchemaValue={props.delSchemaValue}
                 schema={props.schema}
                 path={props.path}
+                onClick={() => {
+                    selectedProperty !== property
+                        ? setSelectedProperty(property)
+                        : setSelectedProperty(null);
+                }}
             />
         );
     }
     return (
         <React.Fragment>
             <h4>Properties</h4>
-            <Accordion>{propertyFields}</Accordion>
+            <Accordion activeKey={selectedProperty}>{propertyFields}</Accordion>
             <div class="mt-3" />
             <Form.Group
                 onChange={(event) => setPropertyName(event.target.value)}
@@ -114,6 +120,7 @@ function PropertyField(props) {
                 as={Card.Header}
                 variant="link"
                 eventKey={property}
+                onClick={props.onClick}
             >
                 <Container>
                     <Row>
