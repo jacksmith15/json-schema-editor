@@ -85,6 +85,23 @@ const KEYWORDS = {
     },
 };
 
+
+/**
+ * Get JSON parser for form input.
+ */
+function getParser(keyword) {
+    const keywordConf = Object.assign({}, ...Object.values(KEYWORDS));
+    const keywordType = keywordConf[keyword].type;
+    function parser(value) {
+        if (keywordType === "number") {
+            return parseFloat(value);
+        }
+        return value;
+    }
+    return parser;
+}
+
+
 function TypeForm(props) {
     const subSchema = new Path(props.path).get(props.schema);
     const types = subSchema.type;
@@ -197,26 +214,30 @@ function ValidationInput(props) {
                         : event.target.value;
                 props.setSchemaValue(
                     Path.join(props.path, props.keyword),
-                    value
+                    getParser(props.keyword)(value)
                 );
             }}
         >
             <Form.Label>{keywordSpec.name}</Form.Label>
-            <Form.Control
-                type={keywordSpec.type}
-                defaultValue={subSchema[props.keyword]}
-                defaultChecked={keywordSpec.default === true}
-            ></Form.Control>
-            <Button
-                variant="danger"
-                onClick={() =>
-                    props.delSchemaValue(
-                        Path.join(props.path, props.keyword),
-                    )
-                }
-            >
-                Remove
-            </Button>
+            <InputGroup>
+                <Form.Control
+                    type={keywordSpec.type}
+                    defaultValue={subSchema[props.keyword]}
+                    defaultChecked={keywordSpec.default === true}
+                ></Form.Control>
+                <InputGroup.Append>
+                    <Button
+                        variant="danger"
+                        onClick={() =>
+                            props.delSchemaValue(
+                                Path.join(props.path, props.keyword),
+                            )
+                        }
+                    >
+                        Remove
+                    </Button>
+                </InputGroup.Append>
+            </InputGroup>
         </Form.Group>
     );
 }
