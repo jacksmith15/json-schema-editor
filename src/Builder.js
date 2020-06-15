@@ -23,6 +23,7 @@ import { CompositionForm } from "forms/composition";
 // TODO: Pass minimal state
 // TODO: Make boolean val keywords Add/Remove only
 // TODO: Stage and commit schema changes
+// TODO: Make the card headers for properties look nice
 
 const METATYPE = {
     reference: ReferenceForm,

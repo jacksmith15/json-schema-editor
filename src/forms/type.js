@@ -1,26 +1,14 @@
 import React from "react";
 import {
-    Accordion,
     Badge,
     Button,
-    ButtonGroup,
-    Card,
-    Col,
-    Container,
     Dropdown,
     DropdownButton,
     Form,
     InputGroup,
-    Modal,
-    Navbar,
-    Row,
-    Tab,
-    Tabs,
-    ToggleButton,
 } from "react-bootstrap";
 
 import { filterProps, merge, Path } from "helpers";
-import { SchemaForm } from "Builder";
 import {PropertyEditor } from "forms/properties";
 
 const KEYWORDS = {
