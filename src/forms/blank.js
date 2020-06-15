@@ -12,8 +12,9 @@ import {
 import { merge, Path } from "helpers";
 
 function BlankForm(props) {
+    const isRoot = !props.path.length;
     const [show, setShow] = React.useState(false);
-    const [tab, setTab] = React.useState("reference");
+    const [tab, setTab] = React.useState(isRoot ? "type": "reference");
     const [choices, setChoices] = React.useState({
         reference: null,
         type: [],
