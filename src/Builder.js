@@ -19,7 +19,6 @@ import { ReferenceForm } from "forms/reference";
 import { CompositionForm } from "forms/composition";
 
 // TODO: Spacing
-// TODO: Name the schema
 // TODO: Save and reference schemas
 // TODO: Pass minimal state
 // TODO: Make boolean val keywords Add/Remove only
