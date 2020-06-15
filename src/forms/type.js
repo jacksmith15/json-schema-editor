@@ -10,6 +10,7 @@ import {
     Dropdown,
     DropdownButton,
     Form,
+    InputGroup,
     Modal,
     Navbar,
     Row,
@@ -220,6 +221,7 @@ function ValidationInput(props) {
     );
 }
 
+// TODO: Break the property editor down
 function PropertyEditor(props) {
     const [propertyName, setPropertyName] = React.useState("");
 
@@ -257,7 +259,7 @@ function PropertyEditor(props) {
                 <Accordion.Toggle as={Card.Header} variant="link" eventKey={property}>
                     <Container>
                         <Row>
-                            <Col><i>{property}</i></Col>
+                            <Col><h5><i>{property}</i></h5></Col>
                             <Col>
                                 <ButtonGroup toggle style={{float: 'right'}}>
                                     <ToggleButton
@@ -303,28 +305,32 @@ function PropertyEditor(props) {
                 onChange={(event) => setPropertyName(event.target.value)}
                 className="form-inline"
             >
-                <Form.Control
-                    type="text"
-                    placeholder="Enter property name here..."
-                    value={propertyName}
-                />
-                <Button
-                    onClick={() => {
-                        if (propertyName.length) {
-                            props.setSchemaValue(
-                                Path.join(
-                                    props.path,
-                                    "properties",
-                                    propertyName
-                                ),
-                                {}
-                            );
-                        };
-                        setPropertyName("");
-                    }}
-                >
-                    Add property
-                </Button>
+                <InputGroup>
+                    <Form.Control
+                        type="text"
+                        placeholder="Enter property name here..."
+                        value={propertyName}
+                    />
+                    <InputGroup.Append>
+                        <Button
+                            onClick={() => {
+                                if (propertyName.length) {
+                                    props.setSchemaValue(
+                                        Path.join(
+                                            props.path,
+                                            "properties",
+                                            propertyName
+                                        ),
+                                        {}
+                                    );
+                                };
+                                setPropertyName("");
+                            }}
+                        >
+                            Add property
+                        </Button>
+                    </InputGroup.Append>
+                </InputGroup>
             </Form.Group>
         </React.Fragment>
     );
