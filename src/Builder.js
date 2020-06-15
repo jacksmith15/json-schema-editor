@@ -24,6 +24,7 @@ import { CompositionForm } from "forms/composition";
 // TODO: Save and reference schemas
 // TODO: Pass minimal state
 // TODO: Make boolean val keywords Add/Remove only
+// TODO: Stage and commit schema changes
 
 const METATYPE = {
     reference: ReferenceForm,

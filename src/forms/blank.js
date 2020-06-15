@@ -12,7 +12,6 @@ import {
 
 import { merge, Path } from "helpers";
 
-// TODO: X button does not work on modal
 
 function BlankForm(props) {
     const isRoot = !props.path.length;
@@ -26,7 +25,12 @@ function BlankForm(props) {
     const [stagedSchemaName, setStagedSchemaName] = React.useState(
         props.schemaName
     );
-    const handleClose = () => {
+    const readyToAccept =
+        (!isRoot || stagedSchemaName.length > 0) &&
+        ((tab === "composition" && choices.composition !== null) ||
+            (tab === "reference" && choices.reference !== null) ||
+            (tab === "type" && choices.type.length > 0));
+    const handleAccept = () => {
         if (isRoot) {
             props.setSchemaName(stagedSchemaName);
         }
@@ -55,14 +59,16 @@ function BlankForm(props) {
 
             <LaunchSchemaModal
                 show={show}
-                handleClose={handleClose}
+                setShow={setShow}
+                handleAccept={handleAccept}
                 tab={tab}
                 setTab={setTab}
                 choices={choices}
                 setChoices={setChoices}
-                isRoot={isRoot}
                 stagedSchemaName={stagedSchemaName}
                 setStagedSchemaName={setStagedSchemaName}
+                isRoot={isRoot}
+                readyToAccept={readyToAccept}
             />
         </Form.Group>
     );
@@ -84,8 +90,8 @@ function LaunchSchemaModal(props) {
                     />
                     <InputGroup.Append>
                         <Button
-                            onClick={props.handleClose}
-                            disabled={!props.stagedSchemaName.length}
+                            onClick={props.handleAccept}
+                            disabled={!props.readyToAccept}
                         >
                             Accept
                         </Button>
@@ -94,13 +100,18 @@ function LaunchSchemaModal(props) {
             </Form.Group>
         );
     } else {
-        AcceptButton = <Button onClick={props.handleClose}>Accept</Button>;
+        AcceptButton = (
+            <Button onClick={props.handleAccept} disabled={!props.readyToAccept}>
+                Accept
+            </Button>
+        );
     }
     return (
         <Modal
             show={props.show}
             size="lg"
             aria-labelledby="contained-modal-title-vcenter"
+            onHide={() => {props.setShow(false);}}
             centered
         >
             <Modal.Header closeButton>
