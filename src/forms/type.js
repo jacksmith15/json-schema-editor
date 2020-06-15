@@ -116,6 +116,7 @@ function TypeForm(props) {
                     </React.Fragment>
                 ))}
             </h3>
+            <h4>Validation rules</h4>
             <ValidationSelector
                 path={props.path}
                 schema={props.schema}
@@ -143,16 +144,18 @@ function TypeForm(props) {
 
 function ValidationSelector(props) {
     const subSchema = new Path(props.path).get(props.schema);
-    const keywordConfig = merge(
-        {},
-        ...Object.values(
-            filterProps((key) => subSchema.type.includes(key), KEYWORDS)
+    const keywordConfig = filterProps(
+        (keyword) => !Object.keys(subSchema).includes(keyword),
+        merge(
+            {},
+            ...Object.values(
+                filterProps((typeName) => subSchema.type.includes(typeName), KEYWORDS)
+            )
         )
     );
     if (Object.keys(keywordConfig).length) {
         return (
             <Form.Group>
-                <h4>Validation rules</h4>
                 <DropdownButton
                     id={props.path + ".add-validation"}
                     title="Add validation rule..."
