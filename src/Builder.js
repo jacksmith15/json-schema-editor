@@ -1,11 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 import {
+    Accordion,
+    Card,
     Container,
     Form,
     Button,
     Modal,
     Navbar,
+    Row,
     Tabs,
     Tab,
 } from "react-bootstrap";
@@ -16,8 +19,11 @@ import { ReferenceForm } from "forms/reference";
 import { CompositionForm } from "forms/composition";
 
 // TODO: Spacing
-// TODO: Remove properties
 // TODO: Don't close accordion on change
+// TODO: Name the schema
+// TODO: Save and reference schemas
+// TODO: Pass minimal state
+// TODO: Make boolean val keywords Add/Remove only
 
 const METATYPE = {
     reference: ReferenceForm,
@@ -55,23 +61,56 @@ function SchemaForm(props) {
     );
 }
 
+function SchemaRenderer(props) {
+    return (
+        <Container>
+            <Accordion>
+                <Card>
+                    <Accordion.Toggle
+                        as={Card.Header}
+                        variant="link"
+                        eventKey="preview"
+                    >
+                        Preview
+                    </Accordion.Toggle>
+                    <Accordion.Collapse eventKey="preview">
+                        <pre>
+                            {JSON.stringify(
+                                props.schema,
+                                null,
+                                2
+                            )}
+                        </pre>
+                    </Accordion.Collapse>
+                </Card>
+            </Accordion>
+        </Container>
+    );
+}
+
 function Builder(props) {
     const [schema, setSchema] = React.useState({});
 
     const setSchemaValue = (path, value) =>
         setSchema(new Path(path).set(schema, value));
 
-    const delSchemaValue = (path) =>
-        setSchema(new Path(path).remove(schema));
+    const delSchemaValue = (path) => setSchema(new Path(path).remove(schema));
 
     return (
-        <SchemaForm
-            setSchemaValue={setSchemaValue}
-            delSchemaValue={delSchemaValue}
-            schema={schema}
-            path=""
-        />
+        <Container>
+            <Row>
+                <SchemaForm
+                    setSchemaValue={setSchemaValue}
+                    delSchemaValue={delSchemaValue}
+                    schema={schema}
+                    path=""
+                />
+            </Row>
+            <Row>
+                <SchemaRenderer schema={schema} />
+            </Row>
+        </Container>
     );
 }
 
-export {Builder, SchemaForm};
+export { Builder, SchemaForm };

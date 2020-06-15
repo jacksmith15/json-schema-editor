@@ -298,6 +298,7 @@ function PropertyEditor(props) {
             <Accordion>
                 {propertyFields}
             </Accordion>
+            <div class="mt-3"/>
             <Form.Group
                 onChange={(event) => setPropertyName(event.target.value)}
                 className="form-inline"
