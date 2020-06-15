@@ -2,16 +2,20 @@ import React from "react";
 import {
     Accordion,
     Badge,
+    Button,
+    ButtonGroup,
     Card,
+    Col,
     Container,
     Dropdown,
     DropdownButton,
     Form,
-    Button,
     Modal,
     Navbar,
-    Tabs,
+    Row,
     Tab,
+    Tabs,
+    ToggleButton,
 } from "react-bootstrap";
 
 import { filterProps, merge, Path } from "helpers";
@@ -109,6 +113,7 @@ function TypeForm(props) {
                     path={props.path}
                     schema={props.schema}
                     setSchemaValue={props.setSchemaValue}
+                    delSchemaValue={props.delSchemaValue}
                 />
             ) : (
                 ""
@@ -217,14 +222,62 @@ function ValidationInput(props) {
 
 function PropertyEditor(props) {
     const [propertyName, setPropertyName] = React.useState("");
+
     const subSchema = new Path(props.path).get(props.schema);
+    const required = subSchema.required || [];
+    const setRequired = (property, isRequired) => {
+        let newRequired = [];
+        if (isRequired) {
+            newRequired = [...required, property]
+        } else {
+            newRequired = required.filter((item) => item !== property);
+        }
+        if (!newRequired.length) {
+            props.delSchemaValue(Path.join(props.path, "required"));
+        } else {
+            props.setSchemaValue(Path.join(props.path, "required"), newRequired);
+        }
+    }
+    const removeProperty = (property) => {
+        let newSubSchema = Path.join(props.path, "properties", property).remove(subSchema);
+        let newRequired = required.filter((item) => item !== property);
+        if (newRequired.length) {
+            newSubSchema.required = newRequired;
+        } else {
+            delete newSubSchema.required;
+        }
+        props.setSchemaValue(props.path, newSubSchema);
+    }
+
     const propertySchemas = subSchema.properties;
     let propertyFields = [];
     for (const property in propertySchemas) {
         propertyFields.push(
             <Card>
                 <Accordion.Toggle as={Card.Header} variant="link" eventKey={property}>
-                    <i>{property}</i>
+                    <Container>
+                        <Row>
+                            <Col><i>{property}</i></Col>
+                            <Col>
+                                <ButtonGroup toggle style={{float: 'right'}}>
+                                    <ToggleButton
+                                        type="checkbox"
+                                        checked={required.includes(property)}
+                                        onChange={event => setRequired(property, event.target.checked)}
+                                        variant={required.includes(property) ? "primary" : "secondary"}
+                                    >
+                                        Required
+                                    </ToggleButton>
+                                    <Button
+                                        variant="danger"
+                                        onClick={event => removeProperty(property)}
+                                    >
+                                        Remove
+                                    </Button>
+                                </ButtonGroup>
+                            </Col>
+                        </Row>
+                    </Container>
                 </Accordion.Toggle>
                 <Accordion.Collapse eventKey={property}>
                     <Card.Body>
