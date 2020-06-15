@@ -34,29 +34,30 @@ const METATYPE = {
 
 const COMPOSITION_KEYWORDS = new xSet(["allOf", "anyOf", "oneOf", "not"]);
 
-function getSchemaFormComponent(schema) {
-    if ("$ref" in schema) {
-        return METATYPE.reference;
-    } else if (new xSet(schema.keys).intersection(COMPOSITION_KEYWORDS).size) {
-        return METATYPE.composition;
-    } else if (Object.keys(schema).includes("type")) {
-        return METATYPE.type;
-    } else {
-        return METATYPE.blank;
-    }
-}
+function Builder(props) {
+    const [schema, setSchema] = React.useState({});
+    const [schemaName, setSchemaName] = React.useState("");
 
-function SchemaForm(props) {
-    const schema = new Path(props.path).get(props.schema);
-    const FormComponent = getSchemaFormComponent(schema);
+    const setSchemaValue = (path, value) =>
+        setSchema(new Path(path).set(schema, value));
+
+    const delSchemaValue = (path) => setSchema(new Path(path).remove(schema));
+
     return (
         <Container>
-            <FormComponent
-                setSchemaValue={props.setSchemaValue}
-                delSchemaValue={props.delSchemaValue}
-                schema={props.schema}
-                path={props.path}
-            />
+            <Row>
+                <SchemaForm
+                    setSchemaValue={setSchemaValue}
+                    delSchemaValue={delSchemaValue}
+                    schema={schema}
+                    path=""
+                    setSchemaName={setSchemaName}
+                    schemaName={schemaName}
+                />
+            </Row>
+            <Row>
+                <SchemaRenderer schema={schema} />
+            </Row>
         </Container>
     );
 }
@@ -74,13 +75,7 @@ function SchemaRenderer(props) {
                         Preview
                     </Accordion.Toggle>
                     <Accordion.Collapse eventKey="preview">
-                        <pre>
-                            {JSON.stringify(
-                                props.schema,
-                                null,
-                                2
-                            )}
-                        </pre>
+                        <pre>{JSON.stringify(props.schema, null, 2)}</pre>
                     </Accordion.Collapse>
                 </Card>
             </Accordion>
@@ -88,29 +83,33 @@ function SchemaRenderer(props) {
     );
 }
 
-function Builder(props) {
-    const [schema, setSchema] = React.useState({});
-
-    const setSchemaValue = (path, value) =>
-        setSchema(new Path(path).set(schema, value));
-
-    const delSchemaValue = (path) => setSchema(new Path(path).remove(schema));
-
+function SchemaForm(props) {
+    const schema = new Path(props.path).get(props.schema);
+    const FormComponent = getSchemaFormComponent(schema);
     return (
         <Container>
-            <Row>
-                <SchemaForm
-                    setSchemaValue={setSchemaValue}
-                    delSchemaValue={delSchemaValue}
-                    schema={schema}
-                    path=""
-                />
-            </Row>
-            <Row>
-                <SchemaRenderer schema={schema} />
-            </Row>
+            <FormComponent
+                setSchemaValue={props.setSchemaValue}
+                delSchemaValue={props.delSchemaValue}
+                schema={props.schema}
+                path={props.path}
+                setSchemaName={props.setSchemaName}
+                schemaName={props.schemaName}
+            />
         </Container>
     );
+}
+
+function getSchemaFormComponent(schema) {
+    if ("$ref" in schema) {
+        return METATYPE.reference;
+    } else if (new xSet(schema.keys).intersection(COMPOSITION_KEYWORDS).size) {
+        return METATYPE.composition;
+    } else if (Object.keys(schema).includes("type")) {
+        return METATYPE.type;
+    } else {
+        return METATYPE.blank;
+    }
 }
 
 export { Builder, SchemaForm };

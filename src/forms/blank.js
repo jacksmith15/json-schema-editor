@@ -1,26 +1,35 @@
 import React from "react";
 import {
+    Button,
     Container,
     Form,
-    Button,
+    InputGroup,
     Modal,
     Navbar,
-    Tabs,
     Tab,
+    Tabs,
 } from "react-bootstrap";
 
 import { merge, Path } from "helpers";
 
+// TODO: X button does not work on modal
+
 function BlankForm(props) {
     const isRoot = !props.path.length;
     const [show, setShow] = React.useState(false);
-    const [tab, setTab] = React.useState(isRoot ? "type": "reference");
+    const [tab, setTab] = React.useState(isRoot ? "type" : "reference");
     const [choices, setChoices] = React.useState({
         reference: null,
         type: [],
         composition: null,
     });
+    const [stagedSchemaName, setStagedSchemaName] = React.useState(
+        props.schemaName
+    );
     const handleClose = () => {
+        if (isRoot) {
+            props.setSchemaName(stagedSchemaName);
+        }
         if (tab === "composition" && choices.composition !== null) {
             props.setSchemaValue(
                 Path.join(props.path, choices[tab]),
@@ -31,7 +40,7 @@ function BlankForm(props) {
                 Path.join(props.path, "$ref"),
                 `#/definitions/${choices[tab]}`
             );
-        } else if (tab === "type") {
+        } else if (tab === "type" && choices[tab].length) {
             props.setSchemaValue(Path.join(props.path, "type"), choices[tab]);
         }
         setShow(false);
@@ -51,12 +60,42 @@ function BlankForm(props) {
                 setTab={setTab}
                 choices={choices}
                 setChoices={setChoices}
+                isRoot={isRoot}
+                stagedSchemaName={stagedSchemaName}
+                setStagedSchemaName={setStagedSchemaName}
             />
         </Form.Group>
     );
 }
 
 function LaunchSchemaModal(props) {
+    let AcceptButton = null;
+    if (props.isRoot) {
+        AcceptButton = (
+            <Form.Group>
+                <InputGroup>
+                    <Form.Control
+                        type="text"
+                        placeholder="Enter schema name here..."
+                        value={props.stagedSchemaName}
+                        onChange={(event) =>
+                            props.setStagedSchemaName(event.target.value)
+                        }
+                    />
+                    <InputGroup.Append>
+                        <Button
+                            onClick={props.handleClose}
+                            disabled={!props.stagedSchemaName.length}
+                        >
+                            Accept
+                        </Button>
+                    </InputGroup.Append>
+                </InputGroup>
+            </Form.Group>
+        );
+    } else {
+        AcceptButton = <Button onClick={props.handleClose}>Accept</Button>;
+    }
     return (
         <Modal
             show={props.show}
@@ -88,9 +127,7 @@ function LaunchSchemaModal(props) {
                     })}
                 </Tabs>
             </Modal.Body>
-            <Modal.Footer>
-                <Button onClick={props.handleClose}>Accept</Button>
-            </Modal.Footer>
+            <Modal.Footer>{AcceptButton}</Modal.Footer>
         </Modal>
     );
 }
@@ -98,7 +135,7 @@ function LaunchSchemaModal(props) {
 function ReferenceTab(props) {
     return (
         <Tab eventKey="reference" title="Choose reference">
-            <div class="mt-3"/>
+            <div class="mt-3" />
             <Form.Group className="my-2">
                 <Form.Control
                     as="select"
@@ -126,7 +163,7 @@ function ReferenceTab(props) {
 function TypeTab(props) {
     return (
         <Tab eventKey="type" title="Create new">
-            <div class="mt-3"/>
+            <div class="mt-3" />
             <Form.Group className="my-2">
                 <Form.Control
                     as="select"
@@ -158,7 +195,7 @@ function TypeTab(props) {
 function CompositionTab(props) {
     return (
         <Tab eventKey="composition" title="Compose">
-            <div class="mt-3"/>
+            <div class="mt-3" />
             <Form.Group className="my-2">
                 <Form.Control
                     as="select"

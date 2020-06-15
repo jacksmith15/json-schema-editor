@@ -108,14 +108,14 @@ function TypeForm(props) {
     const types = subSchema.type;
     return (
         <React.Fragment>
-            <h6>
-                {types.map((value, index) => (
+            <h3>
+                {props.schemaName}{types.map((value, index) => (
                     <React.Fragment key={index}>
                         {" "}
                         <Badge variant="secondary">{value}</Badge>{" "}
                     </React.Fragment>
                 ))}
-            </h6>
+            </h3>
             <ValidationSelector
                 path={props.path}
                 schema={props.schema}
