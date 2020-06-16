@@ -11,7 +11,21 @@ function EditableField(props) {
 
     const controlRef = React.createRef();
 
-    const handleKeyPress = (event) => {
+    const applyChange = React.useCallback(() => {
+        setValue(stagedValue);
+        if (props.onChange instanceof Function) {
+            props.onChange({ target: { value: stagedValue } });
+        }
+    }, [props, stagedValue, setValue]);
+
+    const cancelChange = React.useCallback(() => {
+        if (controlRef.current) {
+            controlRef.current.value = value;
+        }
+        setStagedValue(value);
+    }, [controlRef, setStagedValue, value]);
+
+    const handleKeyPress = React.useCallback((event) => {
         if (!focused) {
             return;
         }
@@ -23,7 +37,7 @@ function EditableField(props) {
             controlRef.current.blur();
             cancelChange();
         }
-    };
+    }, [applyChange, cancelChange, focused, controlRef]);
 
     React.useEffect(() => {
         document.addEventListener("keydown", handleKeyPress, false);
@@ -31,30 +45,6 @@ function EditableField(props) {
             document.removeEventListener("keydown", handleKeyPress, false);
         }
     }, [handleKeyPress])
-
-    const applyChange = () => {
-        setValue(stagedValue);
-        if (props.onChange instanceof Function) {
-            props.onChange({ target: { value: stagedValue } });
-        }
-    };
-
-    const cancelChange = () => {
-        if (controlRef.current) {
-            controlRef.current.value = value;
-        }
-        setStagedValue(value);
-    };
-
-    const handleFocus = (value) => {
-        if (value) {
-            document.addEventListener("keydown", handleKeyPress, false);
-            setFocused(true);
-        } else {
-            document.removeEventListener("keydown", handleKeyPress, false);
-            setFocused(false);
-        }
-    };
 
     let InputButtons = null;
     if (focused) {
@@ -106,11 +96,11 @@ function EditableField(props) {
                     readOnly={!focused}
                     ref={controlRef}
                     onFocus={() => {
-                        handleFocus(true);
+                        setFocused(true);
                     }}
                     onBlur={() => {
                         applyChange(stagedValue);
-                        handleFocus(false);
+                        setFocused(false);
                     }}
                 ></Form.Control>
                 {InputButtons}
