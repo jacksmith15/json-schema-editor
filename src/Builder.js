@@ -1,22 +1,16 @@
 import React from "react";
-import styled from "styled-components";
 import {
     Accordion,
     Card,
     Container,
-    Form,
-    Button,
-    Modal,
-    Navbar,
     Row,
-    Tabs,
-    Tab,
 } from "react-bootstrap";
-import { Path, xSet, clean } from "helpers";
+import { Path, xSet } from "helpers";
 import { TypeForm } from "forms/type";
 import { BlankForm } from "forms/blank";
 import { ReferenceForm } from "forms/reference";
 import { CompositionForm } from "forms/composition";
+import { EditableField } from "EditableField";
 
 // TODO: Spacing
 // TODO: Save and reference schemas
@@ -57,6 +51,12 @@ function Builder(props) {
             </Row>
             <Row>
                 <SchemaRenderer schema={schema} />
+            </Row>
+            <div className="mt-5" />
+            <Row>
+                <Container>
+                    <EditableField label="Test Field" />
+                </Container>
             </Row>
         </Container>
     );
