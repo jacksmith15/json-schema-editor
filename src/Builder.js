@@ -55,7 +55,8 @@ function Builder(props) {
             <div className="mt-5" />
             <Row>
                 <Container>
-                    <EditableField label="Test Field" />
+                    <EditableField label="Test Field" default="foo"/>
+                    <EditableField label="Test Field 2" default="bar"/>
                 </Container>
             </Row>
         </Container>

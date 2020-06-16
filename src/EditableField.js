@@ -11,6 +11,27 @@ function EditableField(props) {
 
     const controlRef = React.createRef();
 
+    const handleKeyPress = (event) => {
+        if (!focused) {
+            return;
+        }
+        if (event.keyCode === 13) {
+            controlRef.current.blur();
+            applyChange();
+        }
+        if (event.keyCode === 27) {
+            controlRef.current.blur();
+            cancelChange();
+        }
+    };
+
+    React.useEffect(() => {
+        document.addEventListener("keydown", handleKeyPress, false);
+        return () => {
+            document.removeEventListener("keydown", handleKeyPress, false);
+        }
+    }, [handleKeyPress])
+
     const applyChange = () => {
         setValue(stagedValue);
         if (props.onChange instanceof Function) {
@@ -19,9 +40,21 @@ function EditableField(props) {
     };
 
     const cancelChange = () => {
-        controlRef.current.value = value;
+        if (controlRef.current) {
+            controlRef.current.value = value;
+        }
         setStagedValue(value);
-    }
+    };
+
+    const handleFocus = (value) => {
+        if (value) {
+            document.addEventListener("keydown", handleKeyPress, false);
+            setFocused(true);
+        } else {
+            document.removeEventListener("keydown", handleKeyPress, false);
+            setFocused(false);
+        }
+    };
 
     let InputButtons = null;
     if (focused) {
@@ -52,8 +85,6 @@ function EditableField(props) {
                     key="edit"
                     hidden={focused}
                     onClick={() => {
-                        console.log(controlRef.current);
-                        console.log(document.activeElement);
                         controlRef.current.focus && controlRef.current.focus();
                     }}
                 >
@@ -68,18 +99,18 @@ function EditableField(props) {
             <InputGroup>
                 <Form.Control
                     type={props.type || "text"}
-                    defaultValue={stagedValue}
+                    value={stagedValue}
                     onChange={(event) => {
                         setStagedValue(event.target.value);
                     }}
                     readOnly={!focused}
                     ref={controlRef}
                     onFocus={() => {
-                        setFocused(true);
+                        handleFocus(true);
                     }}
                     onBlur={() => {
                         applyChange(stagedValue);
-                        setFocused(false);
+                        handleFocus(false);
                     }}
                 ></Form.Control>
                 {InputButtons}
