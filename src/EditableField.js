@@ -19,39 +19,39 @@ function EditableField(props) {
     }, [props, stagedValue, setValue]);
 
     const cancelChange = React.useCallback(() => {
-        if (controlRef.current) {
-            controlRef.current.value = value;
-        }
         setStagedValue(value);
-    }, [controlRef, setStagedValue, value]);
+    }, [setStagedValue, value]);
 
-    const handleKeyPress = React.useCallback((event) => {
-        if (!focused) {
-            return;
-        }
-        if (event.keyCode === 13) {
-            controlRef.current.blur();
-            applyChange();
-        }
-        if (event.keyCode === 27) {
-            controlRef.current.blur();
-            cancelChange();
-        }
-    }, [applyChange, cancelChange, focused, controlRef]);
+    const handleKeyPress = React.useCallback(
+        (event) => {
+            if (!focused) {
+                return;
+            }
+            if (event.key === "Enter") {
+                controlRef.current.blur();
+            }
+            if (event.key === "Escape") {
+                cancelChange();
+                document.activeElement.blur();
+            }
+        },
+        [cancelChange, focused, controlRef]
+    );
 
     React.useEffect(() => {
         document.addEventListener("keydown", handleKeyPress, false);
         return () => {
             document.removeEventListener("keydown", handleKeyPress, false);
-        }
-    }, [handleKeyPress])
+        };
+    }, [handleKeyPress]);
 
     let InputButtons = null;
     if (focused) {
         InputButtons = (
-            <InputGroup.Append>
+            <InputGroup.Append role="field-buttons">
                 <Button
-                    key="apply"
+                    key="accept"
+                    role="accept-button"
                     variant="success"
                     hidden={!focused}
                     onMouseDown={applyChange}
@@ -59,7 +59,8 @@ function EditableField(props) {
                     &#x2713;
                 </Button>
                 <Button
-                    key="undo"
+                    key="cancel"
+                    role="cancel-button"
                     variant="danger"
                     hidden={!focused}
                     onMouseDown={cancelChange}
@@ -70,9 +71,10 @@ function EditableField(props) {
         );
     } else {
         InputButtons = (
-            <InputGroup.Append>
+            <InputGroup.Append role="field-buttons">
                 <Button
                     key="edit"
+                    role="edit-button"
                     hidden={focused}
                     onClick={() => {
                         controlRef.current.focus && controlRef.current.focus();
@@ -85,11 +87,14 @@ function EditableField(props) {
     }
     return (
         <Form.Group>
-            {props.label && <Form.Label>{props.label}</Form.Label>}
+            {props.label && (
+                <Form.Label role="field-label">{props.label}</Form.Label>
+            )}
             <InputGroup>
                 <Form.Control
                     type={props.type || "text"}
                     value={stagedValue}
+                    role="field-input"
                     onChange={(event) => {
                         setStagedValue(event.target.value);
                     }}

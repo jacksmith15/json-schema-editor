@@ -1,124 +1,141 @@
 import React from "react";
-import { render, unmountComponentAtNode } from "react-dom";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { act } from "react-dom/test-utils";
-import { isEqual } from "lodash";
-import {stringify} from "jest-matcher-utils";
+import "@testing-library/jest-dom/extend-expect";
 
 import { EditableField } from "EditableField";
 
-let container = null;
-beforeEach(() => {
-    // setup a DOM element as a render target
-    container = document.createElement("div");
-    document.body.appendChild(container);
-});
-
-afterEach(() => {
-    // cleanup on exiting
-    unmountComponentAtNode(container);
-    container.remove();
-    container = null;
-});
-
-expect.extend({
-    toLodashEqual(left, right) {
-        return {
-            pass: isEqual(left, right),
-            message: () => `${left} does not equal ${right}`,
-        }
-    }
-});
-
-const expectStringifyEqual = (left, right) => {
-    expect(stringify(left)).toEqual(stringify(right));
+function clickOn(target) {
+    fireEvent.mouseOver(target);
+    fireEvent.mouseMove(target);
+    fireEvent.mouseDown(target);
+    target.focus();
+    fireEvent.mouseUp(target);
+    fireEvent.click(target);
 }
 
 describe("EditableField", () => {
-    describe("with no props", () => {
+    let unmount = null;
+    beforeEach(() => {
+        act(() => {
+            const rendered = render(<EditableField label="Test Field" />);
+            unmount = rendered.unmount;
+        });
+    });
 
+    afterEach(() => {
+        act(() => {
+            unmount();
+        });
+    });
+
+    const checkInactive = (value) => {
+        expect(screen.getByRole("field-label")).toHaveTextContent("Test Field");
+        expect(screen.getByRole("field-input")).toHaveValue(value);
+        expect(screen.getByRole("field-input")).toHaveAttribute("readonly");
+        expect(screen.queryAllByRole("edit-button").length).toEqual(1);
+        expect(screen.getByRole("edit-button")).toHaveTextContent("✎");
+    };
+
+    const checkActive = (value) => {
+        expect(screen.getByRole("field-label")).toHaveTextContent("Test Field");
+        expect(screen.getByRole("field-input")).toHaveValue(value);
+        expect(screen.getByRole("field-input")).not.toHaveAttribute("readonly");
+        expect(screen.queryAllByRole("accept-button").length).toEqual(1);
+        expect(screen.getByRole("accept-button")).toHaveTextContent("✓");
+        expect(screen.queryAllByRole("cancel-button").length).toEqual(1);
+        expect(screen.getByRole("cancel-button")).toHaveTextContent("✗");
+    };
+
+    it("should render correctly out of focus", () => {
+        checkInactive("");
+    });
+
+    it("should render correctly on focus", () => {
+        act(() => {
+            screen.getByRole("field-input").focus();
+        });
+        checkActive("");
+    });
+
+    it("should focus on edit button press", () => {
+        act(() => {
+            screen.getByRole("edit-button").click();
+        });
+        checkActive("");
+    });
+
+    describe("focused", () => {
         beforeEach(() => {
             act(() => {
-                render(<EditableField />, container);
+                screen.getByRole("field-input").focus();
             });
         });
 
-        it("should render correctly out of focus", () => {
-            expectStringifyEqual(
-                container,
-                <div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <input
-                                class="form-control"
-                                readonly=""
-                                type="text"
-                                value=""
-                            />
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    ✎
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        });
-
-        it("should render correctly in focus", () => {
+        it("should render correctly on blur", () => {
             act(() => {
-                container.querySelector("input").focus();
+                screen.getByRole("field-input").blur();
             });
-            expectStringifyEqual(
-                container,
-                <div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <input
-                                class="form-control"
-                                type="text"
-                                value=""
-                            />
-                            <div class="input-group-append">
-                                <button class="btn btn-success" type="button">
-                                    ✓
-                                </button>
-                                <button class="btn btn-danger" type="button">
-                                    ✗
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
+            checkInactive("");
         });
 
-        it("should render correctly on edit button press", () => {
+        it("should render correctly on writing in the field", () => {
             act(() => {
-                container.querySelector("button, .btn-primary").click();
+                let input = screen.getByRole("field-input");
+                fireEvent.change(input, { target: { value: "Test value" } });
             });
-            expectStringifyEqual(
-                container,
-                <div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <input
-                                class="form-control"
-                                type="text"
-                                value=""
-                            />
-                            <div class="input-group-append">
-                                <button class="btn btn-success" type="button">
-                                    ✓
-                                </button>
-                                <button class="btn btn-danger" type="button">
-                                    ✗
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
+            checkActive("Test value");
+        });
+
+        describe("staged changes", () => {
+            beforeEach(() => {
+                act(() => {
+                    let input = screen.getByRole("field-input");
+                    fireEvent.change(input, {
+                        target: { value: "staged change" },
+                    });
+                });
+            });
+
+            it("should keep the changed value on blur", () => {
+                act(() => {
+                    screen.getByRole("field-input").blur();
+                });
+                checkInactive("staged change");
+            });
+
+            it("should keep the staged change on accept button press", () => {
+                act(() => {
+                    clickOn(screen.getByRole("accept-button"));
+                });
+                checkInactive("staged change");
+            });
+
+            it("should revert the staged change on cancel button press", () => {
+                act(() => {
+                    clickOn(screen.getByRole("cancel-button"));
+                });
+                checkInactive("");
+            });
+
+            it("should keep the staged change on ENTER key press", () => {
+                act(() => {
+                    fireEvent.keyDown(document.activeElement || document.body, {
+                        key: "Enter",
+                    });
+                });
+                checkInactive("staged change");
+            });
+
+            it("should revert the staged change on ESCAPE key press", () => {
+                act(() => {
+                    fireEvent.keyDown(document.activeElement || document.body, {
+                        key: "Escape",
+                    });
+                });
+                checkInactive("");
+            });
+
         });
     });
 });
