@@ -7,9 +7,11 @@ import {
     Form,
     InputGroup,
 } from "react-bootstrap";
+import { Trash } from "react-bootstrap-icons";
 
 import { filterProps, merge, Path } from "helpers";
-import {PropertyEditor } from "forms/properties";
+import { PropertyEditor } from "forms/properties";
+import { EditableField } from "EditableField";
 
 const KEYWORDS = {
     array: {
@@ -74,7 +76,6 @@ const KEYWORDS = {
     },
 };
 
-
 /**
  * Get JSON parser for form input.
  */
@@ -90,14 +91,14 @@ function getParser(keyword) {
     return parser;
 }
 
-
 function TypeForm(props) {
     const subSchema = new Path(props.path).get(props.schema);
     const types = subSchema.type;
     return (
         <React.Fragment>
             <h3>
-                {props.schemaName}{types.map((value, index) => (
+                {props.schemaName}
+                {types.map((value, index) => (
                     <React.Fragment key={index}>
                         {" "}
                         <Badge variant="secondary">{value}</Badge>{" "}
@@ -137,7 +138,10 @@ function ValidationSelector(props) {
         merge(
             {},
             ...Object.values(
-                filterProps((typeName) => subSchema.type.includes(typeName), KEYWORDS)
+                filterProps(
+                    (typeName) => subSchema.type.includes(typeName),
+                    KEYWORDS
+                )
             )
         )
     );
@@ -169,7 +173,6 @@ function ValidationSelector(props) {
     return null;
 }
 
-
 function ValidationInputs(props) {
     const subSchema = new Path(props.path).get(props.schema);
     const keywordSpecs = merge({}, ...Object.values(KEYWORDS));
@@ -195,44 +198,45 @@ function ValidationInputs(props) {
 function ValidationInput(props) {
     const subSchema = new Path(props.path).get(props.schema);
     const keywordSpec = merge({}, ...Object.values(KEYWORDS))[props.keyword];
-    return (
-        <Form.Group
-            name={props.keyword}
-            key={props.keyword}
-            onChange={(event) => {
-                const value =
-                    event.target.type === "checkbox"
-                        ? event.target.checked
-                        : event.target.value;
-                props.setSchemaValue(
-                    Path.join(props.path, props.keyword),
-                    getParser(props.keyword)(value)
-                );
-            }}
-        >
-            <Form.Label>{keywordSpec.name}</Form.Label>
-            <InputGroup>
-                <Form.Control
-                    type={keywordSpec.type}
-                    defaultValue={subSchema[props.keyword]}
-                    defaultChecked={keywordSpec.default === true}
-                ></Form.Control>
-                <InputGroup.Append>
-                    <Button
-                        variant="danger"
-                        onClick={() =>
-                            props.delSchemaValue(
-                                Path.join(props.path, props.keyword),
-                            )
-                        }
-                    >
-                        Remove
-                    </Button>
-                </InputGroup.Append>
-            </InputGroup>
-        </Form.Group>
-    );
+    if (keywordSpec.type === "checkbox") {
+        return (
+            <Form.Group>
+                <Form.Label>{keywordSpec.name}</Form.Label>
+                <InputGroup>
+                    <Form.Control readOnly={true} type="text" value={keywordSpec.name}/>
+                    <InputGroup.Append>
+                        <Button
+                            variant="danger"
+                            onClick={() => props.delSchemaValue(Path.join(props.path, props.keyword))}
+                        >
+                            <Trash/>
+                        </Button>
+                    </InputGroup.Append>
+                </InputGroup>
+            </Form.Group>
+        );
+    }
+    return <EditableField
+        label={keywordSpec.name}
+        key={props.keyword}
+        type={keywordSpec.type}
+        default={subSchema[props.keyword]}
+        onChange={(event) => {
+            const value =
+                event.target.type === "checkbox"
+                    ? event.target.checked
+                    : event.target.value;
+            props.setSchemaValue(
+                Path.join(props.path, props.keyword),
+                getParser(props.keyword)(value)
+            );
+        }}
+        onRemove={() =>
+            props.delSchemaValue(
+                Path.join(props.path, props.keyword)
+            )
+        }
+    />
 }
-
 
 export { TypeForm };

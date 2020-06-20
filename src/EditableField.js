@@ -1,4 +1,5 @@
 import React from "react";
+import { Check, Pencil, Trash, X } from "react-bootstrap-icons";
 import { Form, InputGroup, Button } from "react-bootstrap";
 
 /*
@@ -27,7 +28,7 @@ function EditableField(props) {
             if (!focused) {
                 return;
             }
-            if (event.key === "Enter") {
+            if (event.key === "Enter" && props.as !== "textarea") {
                 controlRef.current.blur();
             }
             if (event.key === "Escape") {
@@ -35,7 +36,7 @@ function EditableField(props) {
                 document.activeElement.blur();
             }
         },
-        [cancelChange, focused, controlRef]
+        [cancelChange, focused, controlRef, props.as]
     );
 
     React.useEffect(() => {
@@ -53,19 +54,17 @@ function EditableField(props) {
                     key="accept"
                     role="accept-button"
                     variant="success"
-                    hidden={!focused}
                     onMouseDown={applyChange}
                 >
-                    &#x2713;
+                    <Check/>
                 </Button>
                 <Button
                     key="cancel"
                     role="cancel-button"
                     variant="danger"
-                    hidden={!focused}
                     onMouseDown={cancelChange}
                 >
-                    &#x2717;
+                    <X/>
                 </Button>
             </InputGroup.Append>
         );
@@ -75,13 +74,22 @@ function EditableField(props) {
                 <Button
                     key="edit"
                     role="edit-button"
-                    hidden={focused}
                     onClick={() => {
                         controlRef.current.focus && controlRef.current.focus();
                     }}
                 >
-                    &#x270e;
+                    <Pencil/>
                 </Button>
+                {props.onRemove ? (
+                    <Button
+                        key="remove"
+                        role="remove-button"
+                        variant="danger"
+                        onClick={props.onRemove}
+                    >
+                        <Trash/>
+                    </Button>
+                ) : null}
             </InputGroup.Append>
         );
     }
@@ -93,6 +101,7 @@ function EditableField(props) {
             <InputGroup>
                 <Form.Control
                     type={props.type || "text"}
+                    as={props.as || undefined}
                     value={stagedValue}
                     role="field-input"
                     onChange={(event) => {

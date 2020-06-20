@@ -10,14 +10,13 @@ import { TypeForm } from "forms/type";
 import { BlankForm } from "forms/blank";
 import { ReferenceForm } from "forms/reference";
 import { CompositionForm } from "forms/composition";
-import { EditableField } from "EditableField";
 
 // TODO: Spacing
 // TODO: Save and reference schemas
 // TODO: Pass minimal state
-// TODO: Make boolean val keywords Add/Remove only
+// TODO: Make boolean val keywords Add/Remove only with logical names
 // TODO: Stage and commit schema changes
-// TODO: Make the card headers for properties look nice
+// TODO: Make the card headers for properties informative and look nice
 
 const METATYPE = {
     reference: ReferenceForm,
@@ -51,13 +50,6 @@ function Builder(props) {
             </Row>
             <Row>
                 <SchemaRenderer schema={schema} />
-            </Row>
-            <div className="mt-5" />
-            <Row>
-                <Container>
-                    <EditableField label="Test Field" default="foo"/>
-                    <EditableField label="Test Field 2" default="bar"/>
-                </Container>
             </Row>
         </Container>
     );

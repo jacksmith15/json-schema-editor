@@ -106,6 +106,29 @@ function LaunchSchemaModal(props) {
             </Button>
         );
     }
+
+    const handleKeyPress = React.useCallback(
+        (event) => {
+            if (!props.show) {
+                return;
+            }
+            if (event.key === "Enter" && props.readyToAccept) {
+                props.handleAccept();
+            }
+            if (event.key === "Escape") {
+                props.setShow(false);
+            }
+        },
+        [props]
+    );
+
+    React.useEffect(() => {
+        document.addEventListener("keydown", handleKeyPress, false);
+        return () => {
+            document.removeEventListener("keydown", handleKeyPress, false);
+        }
+    });
+
     return (
         <Modal
             show={props.show}
